@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>OSCAR</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 125%;
+  line-height: 1.35;
+  overflow: hidden;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.screen::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px 500px at 20% 20%, rgba(255,255,255,0.05), transparent 60%),
+    radial-gradient(700px 400px at 80% 70%, rgba(255,255,255,0.04), transparent 60%);
+  opacity: 0.18;
+  pointer-events: none;
+  animation: ambientPulse 14s ease-in-out infinite;
+}
+
+h1, h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  max-width: 700px;
+  letter-spacing: 0.01em;
+}
+
+p {
+  text-align: center;
+  max-width: 700px;
+  margin: 6px 0;
+}
+
+.answers {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* HOST IMAGES */
+.host-wrap {
+  position: absolute;
+  pointer-events: none;
+  width: min(34vw, 300px);
+  height: min(52vh, 480px);
+  overflow: visible;
+}
+
+.host {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 100%;
+  width: auto;
+  pointer-events: none;
+  transition: transform 0.6s ease, left 0.6s ease, right 0.6s ease, top 0.6s ease, bottom 0.6s ease;
+}
+
+
+button {
+  width: 100%;
+  padding: 12px 14px;
+  background: black;
+  color: white;
+  border: 1px solid white;
+  border-radius: 10px;
+  font-size: 1rem;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+button:hover {
+  background: white;
+  color: black;
+}
+
+button:active {
+  transform: scale(0.985);
+}
+
+button:focus-visible {
+  outline: 2px solid rgba(255,255,255,0.8);
+  outline-offset: 2px;
+}
+
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn-secondary {
+  background: black;
+  color: white;
+  border: 1px solid white;
+}
+
+.money-man {
+  width: 140px;
+  margin-bottom: 30px;
+  transition: transform 0.6s ease;
+}
+
+.pose-0 { transform: rotate(0deg); }
+.pose-1 { transform: rotate(-4deg) translateY(-4px); }
+.pose-2 { transform: rotate(4deg) translateY(-2px); }
+.pose-3 { transform: translateY(-6px); }
+.pose-4 { transform: rotate(-6deg); }
+.pose-5 { transform: rotate(6deg); }
+.pose-6 { transform: scale(1.03); }
+.pose-7 { transform: rotate(2deg); }
+
+.fade-out {
+  opacity: 0 !important;
+}
+
+/* CENTERED TEXT WRAPPER */
+.center-content {
+  max-width: 720px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 2;
+  padding: 0 24px;
+}
+
+/* SPEECH BUBBLE */
+.bubble {
+  position: absolute;
+  max-width: 280px;
+  padding: 12px 16px;
+  border: 1px solid white;
+  border-radius: 14px;
+  background: black;
+  color: white;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  font-family: "Share Tech Mono", system-ui, -apple-system, sans-serif;
+  z-index: 3;
+  pointer-events: none;
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.08);
+}
+
+.bubble-fit {
+  font-size: 0.55rem;
+  line-height: 1.3;
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-left: 1px solid white;
+  border-bottom: 1px solid white;
+  background: black;
+  transform: rotate(45deg);
+}
+
+/* HOST POSITIONS */
+/* SIDE POSITIONS (RANDOM LEFT/RIGHT) */
+.host-side-left { left: clamp(140px, 18vw, 260px); bottom: clamp(12px, 6vh, 80px); }
+.host-side-right { right: clamp(140px, 18vw, 260px); bottom: clamp(12px, 6vh, 80px); }
+.host-mid-left { left: clamp(220px, 28vw, 360px); bottom: clamp(12px, 6vh, 80px); }
+.host-mid-right { right: clamp(220px, 28vw, 360px); bottom: clamp(12px, 6vh, 80px); }
+.host-far-left { transform: translateX(-250px); }
+.host-far-right { transform: translateX(250px); }
+.host-bottom-right { right: clamp(12px, 3vw, 48px); bottom: clamp(12px, 4vh, 64px); left: auto; top: auto; }
+
+/* BUBBLE POINTER DIRECTION */
+.bubble-right::after { right: -6px; top: 18px; }
+.bubble-left::after { left: -6px; top: 18px; transform: rotate(225deg); }
+
+.bubble-right {
+  left: 100%;
+  margin-left: calc(12px - 250px);
+}
+
+.bubble-left {
+  right: 100%;
+  margin-right: calc(12px - 250px);
+}
+
+.bubble-above {
+  bottom: 100%;
+  top: auto;
+  margin-bottom: 10px;
+}
+
+.bubble-below {
+  top: 100%;
+  bottom: auto;
+  margin-top: 10px;
+}
+
+.bubble-small {
+  font-size: 0.45rem;
+  max-width: 160px;
+  padding: 6px 8px;
+  border-radius: 10px;
+}
+
+.bubble-up-80 {
+  transform: translateY(-80px);
+}
+
+/* HOST PEEK (EYES ONLY) */
+.host-quarter-left-bottom {
+  width: 200px;
+  height: 140px;
+  overflow: hidden;
+  position: absolute;
+  left: clamp(12px, 3vw, 48px);
+  bottom: -120px;
+}
+
+.host-up-50 {
+  transform: translateY(-50px);
+}
+
+.host-quarter-left-bottom .host {
+  height: 420px;
+  max-height: none;
+  top: -10px;
+  left: -20px;
+}
+
+@media (max-height: 740px) {
+  .host { height: 42vh; max-height: 420px; }
+  .bubble { max-width: 220px; }
+}
+
+@media (max-width: 900px) {
+  .host { height: 38vh; max-height: 360px; }
+  .center-content { max-width: 620px; }
+  .answers { max-width: 420px; }
+}
+
+/* LOADING SPINNER */
+.spinner {
+  width: 150px;
+  height: 150px;
+  border: 3px solid rgba(255,255,255,0.2);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 2s linear infinite;
+  margin-bottom: 18px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes ambientPulse {
+  0%, 100% { opacity: 0.14; }
+  50% { opacity: 0.22; }
+}
+
+.loading-text {
+  transition: opacity 0.6s ease;
+  opacity: 1;
+}
+
+.loading-text.fade {
+  opacity: 0;
+}
+
+/* METHODOLOGY STEPS */
+.method-step {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+.method-step.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.method-fade {
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+
+.method-fade.show {
+  opacity: 1;
+}
+
+.method-fade-slow {
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+
+.method-fade-slow.show {
+  opacity: 1;
+}
+
+/* FOOTER DISCLAIMERS */
+.footer-note {
+  position: absolute;
+  right: 24px;
+  bottom: 18px;
+  max-width: 420px;
+  font-size: 0.33rem;
+  line-height: 1.35;
+  text-align: right;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* CALCULATOR */
+.calc-wrap {
+  width: min(920px, 92vw);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+  margin-top: -10px;
+}
+
+.calc-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.calc-field label {
+  font-size: 0.48rem;
+  text-align: left;
+}
+
+.calc-field input {
+  background: black;
+  color: white;
+  border: 1px solid white;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.58rem;
+}
+
+.calc-output {
+  border: 1px solid white;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.62rem;
+  text-align: left;
+}
+
+.calc-output div {
+  margin: 6px 0;
+}
+
+.calc-legend {
+  font-size: 0.55rem;
+  text-align: left;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+}
+
+.legend-swatch {
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  background: white;
+}
+
+.calc-canvas {
+  width: 100%;
+  height: 320px;
+  border: 1px solid white;
+  border-radius: 10px;
+  background: black;
+}
+
+.calc-disclaimer {
+  font-size: 0.45rem;
+  color: rgba(255,255,255,0.75);
+  text-align: left;
+}
+
+@media (max-width: 900px) {
+  .calc-wrap {
+    grid-template-columns: 1fr;
+  }
+  .calc-canvas { height: 260px; }
+}
+
+/* WELCOME ZOOM TRANSITION */
+.welcome-zoom {
+  transition: transform 3s ease, opacity 3s ease;
+  transform-origin: var(--zoom-origin-x, 50%) var(--zoom-origin-y, 50%);
+}
+
+.welcome-zoom-active {
+  transform: scale(5);
+  opacity: 0.15;
+}
+
+/* BLACK FADE BETWEEN WELCOME -> METHOD */
+.blackout {
+  position: fixed;
+  inset: 0;
+  background: black;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 999;
+}
+
+.blackout.show {
+  opacity: 1;
+}
+
+/* METHODOLOGY LAYOUT */
+.method-stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.method-header {
+  position: absolute;
+  top: 6vh;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  max-width: 720px;
+}
+
+.method-bubble {
+  position: absolute;
+  top: calc(18vh + 30px);
+  left: 50%;
+  transform: translateX(calc(-50% + 240px));
+  right: auto;
+  max-width: 420px;
+  font-size: 0.65rem;
+}
+
+/* METHOD PAGE VISUALS */
+#method {
+  background: radial-gradient(1200px 600px at 20% 20%, rgba(255, 255, 255, 0.08), transparent 60%),
+              radial-gradient(900px 500px at 80% 60%, rgba(255, 255, 255, 0.05), transparent 60%),
+              #000;
+}
+
+#method .method-header h1 {
+  text-shadow: 0 0 16px rgba(255, 255, 255, 0.18);
+}
+
+#method .method-header p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+#method .bubble {
+  box-shadow: 0 0 18px rgba(255, 255, 255, 0.12);
+}
+
+#hostOscarWrap {
+  animation: oscarFloat 6s ease-in-out infinite;
+}
+
+@keyframes oscarFloat {
+  0% { transform: translate(-225px, -25px) translateY(0); }
+  50% { transform: translate(-225px, -25px) translateY(-10px); }
+  100% { transform: translate(-225px, -25px) translateY(0); }
+}
+
+
+.method-p1 {
+  position: absolute;
+  left: 6vw;
+  top: 30vh;
+  max-width: 320px;
+  font-size: 0.7rem;
+}
+
+.method-p2 {
+  position: absolute;
+  right: 6vw;
+  top: 42vh;
+  max-width: 320px;
+  font-size: 0.7rem;
+}
+
+.method-p3 {
+  position: absolute;
+  left: 50%;
+  bottom: 10vh;
+  transform: translateX(-50%);
+  max-width: 520px;
+  text-align: center;
+  font-size: 0.7rem;
+}
+</style>
+</head>
+
+<body>
+
+<div class="blackout" id="blackout"></div>
+
+<!-- WELCOME -->
+<div class="screen active" id="welcome">
+  <div class="host-wrap host-mid-right host-far-right" id="hostWrapWelcome" style="transform: translateX(270px);">
+    <img class="host" id="hostWelcome" src="images/host_point.png" alt="Host">
+    <div class="bubble bubble-right bubble-above" id="bubbleWelcome">Ready to turn confusion into compounding?</div>
+  </div>
+  <div class="center-content">
+    <h1>Welcome to OSCAR</h1>
+    <p style="font-size: 0.8rem; margin-top: -6px;">(Optimised Selection & Comparison Algorithmic Resource)</p>
+    <p>We’ll help identify an investing platform that best fits the preferences selected.</p>
+    <p><em>Press anywhere to begin</em></p>
+  </div>
+  <div class="footer-note">
+    <strong>Important Notice:</strong> OSCAR is an independent educational tool designed to provide general information only. Information provided by this website does not constitute financial advice and does not take into account your personal financial situation, objectives, or needs. Before making investment decisions, you should consider seeking advice from a licensed financial adviser.
+  </div>
+</div>
+
+<!-- METHODOLOGY -->
+<div class="screen" id="method">
+  <div class="method-stage">
+    <div class="host-wrap host-mid-right host-far-right method-fade" id="hostOscarWrap" style="transform: translate(-225px, -25px);">
+      <img class="host" id="hostOscar" src="images/ChatGPT Image Feb 15, 2026, 04_41_40 PM.png" alt="Oscar">
+    </div>
+    <div class="method-header">
+      <h1 class="method-fade" id="methodTitle" style="font-size: 1.25rem;">Meet OSCAR</h1>
+      <p class="method-fade" id="methodSubtitle" style="font-size: 0.65rem; margin-top: -14px;"><em>(Optimised Selection & Comparison Algorithmic Resource)</em></p>
+    </div>
+    <div class="bubble bubble-right method-bubble method-fade" id="bubbleMethod">
+      OSCAR helps compare platforms using simple preferences. No personal financial details required.
+    </div>
+    <p class="method-step method-p1" id="m1" style="font-size: 0.78rem;">
+      1. Understand Preferences<br>
+      Short questions capture priorities like fees, control, and simplicity.
+    </p>
+    <p class="method-step method-p2" id="m2" style="font-size: 0.78rem;">
+      2. Match Platform Traits<br>
+      A weighted matrix compares fee structure, ownership type, market access, and complexity.
+    </p>
+    <p class="method-step method-p3" id="m3" style="font-size: 0.78rem;">
+      3. Show Results Clearly<br>
+      Results include clear reasoning and are not advice. Choices remain with the user.
+    </p>
+    <p class="method-fade-slow" id="methodContinue" style="font-size: 0.65rem; position: absolute; bottom: 4vh; left: 50%; transform: translateX(-50%);"><em>Press anywhere to continue</em></p>
+  </div>
+  <div class="footer-note method-fade-slow" id="methodFooter">
+    <strong>Trademark Notice.</strong> All platform names, trademarks, and logos are the property of their respective owners. Logos and brand references are used strictly for identification and comparison purposes.
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="screen" id="quiz">
+  <div class="host-wrap host-side-right" id="hostWrapQuiz">
+    <img class="host" id="hostQuiz" src="images/host_point.png" alt="Host">
+    <div class="bubble bubble-left" id="bubbleQuiz"></div>
+  </div>
+  <div class="center-content">
+    <div id="progress" style="font-size: 0.7rem; letter-spacing: 0.08em; opacity: 0.7; margin-bottom: 8px;">Question 1 of 8</div>
+    <h2 id="question"></h2>
+    <div class="answers" id="answers"></div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="screen" id="loading">
+  <div class="spinner"></div>
+  <p id="loadingText" class="loading-text">Crunching numbers<span id="loadingDots"></span></p>
+</div>
+
+<!-- RESULT -->
+<div class="screen" id="result">
+  <div class="host-wrap host-mid-left host-far-left" id="hostWrapResult">
+    <img class="host" id="hostResult" src="images/pose4_tada_right.png" alt="Host">
+  </div>
+  <div class="center-content">
+    <h2 id="resultTitle" style="font-size: 1.05rem; letter-spacing: 0.02em;"></h2>
+    <div id="resultPlatform" style="margin: 10px 0 8px; font-weight: 700; font-size: 1.6rem;"></div>
+    <img id="resultLogo" alt="Platform logo" style="display: none;">
+    <p id="resultReason" style="font-size: 1.0rem; max-width: 720px;"></p>
+    <p id="resultNext" style="font-size: 1.0rem; max-width: 720px;"></p>
+    <p id="resultWarning"></p>
+    <p style="font-size: 0.65rem; margin-top: 8px;">Not exactly what you are looking for? Answer a few more Questions or see OSCAR's Fee impact calculator.</p>
+    <div class="btn-row">
+      <button id="btnMoreQs">5 more Questions</button>
+      <button id="btnCalculator" class="btn-secondary">Fee impact calculator</button>
+    </div>
+    <div class="btn-row">
+      <button id="btnShareResult" class="btn-secondary">Copy shareable link</button>
+    </div>
+  </div>
+  <div class="footer-note">
+    <strong>General Information Only.</strong> The results generated by this tool are based solely on user-selected preferences and behavioural inputs. This tool does not assess suitability, risk capacity, financial circumstances, or investment objectives. Nothing on this website should be interpreted as personal financial advice, a recommendation, or a solicitation to invest.
+  </div>
+</div>
+
+<!-- RESULT 2 -->
+<div class="screen" id="result2">
+  <div class="host-wrap host-mid-left host-far-left">
+    <img class="host" id="hostResult2" src="images/pose4_tada_right.png" alt="Host">
+  </div>
+  <div class="center-content">
+    <h2 id="result2Title" style="font-size: 1.05rem; letter-spacing: 0.02em;"></h2>
+    <div id="result2Platform" style="margin: 10px 0 8px; font-weight: 700; font-size: 1.6rem;"></div>
+    <p id="result2Reason" style="font-size: 1.0rem; max-width: 720px;"></p>
+    <p id="result2Next" style="font-size: 1.0rem; max-width: 720px;"></p>
+    <p id="result2Warning"></p>
+    <div class="btn-row">
+      <button id="btnRestart2">Back to start</button>
+    </div>
+    <div class="btn-row">
+      <button id="btnShareResult2" class="btn-secondary">Copy shareable link</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALCULATOR -->
+<div class="screen" id="calculator">
+  <div class="center-content" style="max-width: 1000px;">
+    <h2 style="font-size: 1.05rem;">OSCAR Fee Impact Calculator</h2>
+    <div class="calc-wrap">
+      <div class="calc-col">
+        <div class="calc-field">
+          <label>Initial investment amount (AUD)</label>
+          <input id="c_initial" type="number" value="0" min="0">
+        </div>
+        <div class="calc-field">
+          <label>Annual contribution (AUD)</label>
+          <input id="c_annual" type="number" value="0" min="0">
+        </div>
+        <div class="calc-field">
+          <label>Investment horizon (years)</label>
+          <input id="c_years" type="number" value="0" min="0">
+        </div>
+        <div class="calc-field">
+          <label>Expected annual return before fees (%)</label>
+          <input id="c_return" type="number" value="7" step="0.1">
+        </div>
+        <div class="calc-field">
+          <label>Annual platform fee (%)</label>
+          <input id="c_platform_fee" type="number" value="0.2" step="0.01">
+        </div>
+        <div class="calc-field">
+          <label>Annual ETF/fund fee (%)</label>
+          <input id="c_etf_fee" type="number" value="0.3" step="0.01">
+        </div>
+        <div class="calc-field">
+          <label>Initial subscription cost (AUD) (if applicable)</label>
+          <input id="c_sub_initial" type="number" value="0" step="1">
+        </div>
+        <div class="calc-field">
+          <label>Brokerage per trade (optional)</label>
+          <input id="c_brokerage" type="number" value="0" step="0.01">
+        </div>
+        <div class="calc-field">
+          <label>Trades per year (optional)</label>
+          <input id="c_trades" type="number" value="0" step="1">
+        </div>
+        <div class="calc-field">
+          <label>FX cost (%) (optional)</label>
+          <input id="c_fx" type="number" value="0" step="0.01">
+        </div>
+      </div>
+      <div class="calc-col">
+        <canvas id="calcChart" class="calc-canvas" width="800" height="320"></canvas>
+        <div class="calc-legend">
+          <div class="legend-item"><span class="legend-swatch" style="background:#27d17c;"></span>With fees (selected)</div>
+          <div class="legend-item"><span class="legend-swatch" style="background:#ffffff;"></span>Without fees</div>
+        </div>
+        <div class="calc-output" id="calcOutput">
+          <div>Future value with fees: —</div>
+          <div>Future value without fees: —</div>
+          <div>Total estimated cost of fees: —</div>
+          <div>Fee drag percentage: —</div>
+          <div>Fee breakdown: —</div>
+        </div>
+        <div class="calc-disclaimer">
+          This tool provides general illustrative information only. It does not constitute financial advice. Results are estimates based on simplified assumptions, including constant returns.
+        </div>
+        <div class="btn-row">
+          <button id="btnRestartCalc">Back to start</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const screens = {
+  welcome: document.getElementById("welcome"),
+  method: document.getElementById("method"),
+  quiz: document.getElementById("quiz"),
+  loading: document.getElementById("loading"),
+  result: document.getElementById("result"),
+  result2: document.getElementById("result2"),
+  calculator: document.getElementById("calculator")
+};
+
+const hostQuiz = document.getElementById("hostQuiz");
+const hostWrapQuiz = document.getElementById("hostWrapQuiz");
+const bubbleQuiz = document.getElementById("bubbleQuiz");
+const loadingDots = document.getElementById("loadingDots");
+const btnMoreQs = document.getElementById("btnMoreQs");
+const btnCalculator = document.getElementById("btnCalculator");
+const btnRestart2 = document.getElementById("btnRestart2");
+const btnRestartCalc = document.getElementById("btnRestartCalc");
+const btnShareResult = document.getElementById("btnShareResult");
+const btnShareResult2 = document.getElementById("btnShareResult2");
+
+let dotsTimer = null;
+let flow = "base";
+let extraStep = 0;
+const extraState = {};
+let lastPlatform = "";
+let chartState = null;
+let audioCtx = null;
+
+const questions = [
+  { id:"intent", text:"What brings you to the world of investing?",
+    answers:["I'm dipping my toes in","I'm looking for higher returns","I'm playing the long-term game"] },
+  { id:"experience", text:"How experienced do you feel about investing?",
+    answers:["I'm new to this","I know the basics","I'm very confident"] },
+  { id:"market", text:"Where do you expect to invest most of your money?",
+    answers:["I'm investing in Australia only","I'm investing mostly overseas","I'm investing a mix of both"] },
+  { id:"fees", text:"How important is keeping fees as low as possible?",
+    answers:["Not a big deal","Important","Extremely important"] },
+  { id:"subscription", text:"Would you pay a small fee for better features or lower costs overall?",
+    answers:["Yes","No","Depends on the value"] },
+  { id:"control", text:"How much control do you want over your investments?",
+    answers:["I'm set and forget","I want some control","I want full control"] },
+  { id:"style", text:"How do you prefer to invest?",
+    answers:["I'm choosing simple diversified ETFs","I'm choosing a mix","I'm picking my own investments"] },
+  { id:"chess", text:"Do you want your investments registered directly in your name?",
+    answers:["I'm choosing yes, in my name","I'm okay if the app holds them","I'm not sure"] }
+];
+
+const extraQuestions = [
+  {
+    id: "ui_load",
+    text: "What type of platform experience feels most comfortable?",
+    answers: ["Extremely simple and minimal", "Clean but information-rich", "Advanced with deep tools"]
+  },
+  {
+    id: "research_pref",
+    text: "How do you prefer to make investing decisions?",
+    answers: ["Minimal research / quick decisions", "Some research before investing", "Deep analysis and data-driven decisions"]
+  },
+  {
+    id: "device_pref",
+    text: "Where do you expect to use the platform most?",
+    answers: ["Mostly mobile", "Mobile and desktop equally", "Mostly desktop"]
+  },
+  {
+    id: "visibility_pref",
+    text: "How much portfolio detail do you prefer to see?",
+    answers: ["Just performance & basics", "Balanced overview & metrics", "Full analytics & breakdowns"]
+  },
+  {
+    id: "guidance_pref",
+    text: "How much built-in education or guidance is preferred?",
+    answers: ["Very little / independent use", "Helpful but not intrusive", "Strong guidance & learning tools"]
+  }
+];
+
+let step = 0;
+const state = {};
+const uiConfig = [
+  { side: "right", bubble: false, hostClass: "host-mid-right host-far-right" }, // Q1 (Page 2)
+  { side: "left", bubble: false, hostClass: "host-mid-left host-far-left" }, // Q2 (Page 3)
+  { side: "right", bubble: true, bubblePos: "above", hostClass: "host-mid-right host-far-right" }, // Q3 (Page 4)
+  { side: "right", bubble: true, bubblePos: "above", hostClass: "host-mid-right host-bottom-right" }, // Q4 (Page 5) no far shift
+  { side: "right", bubble: true, bubblePos: "below", bubbleSize: "small", bubbleClass: "bubble-up-80", hostClass: "host-mid-right host-far-right" }, // Q5 (Page 6)
+  { side: "left", bubble: false, hostClass: "host-quarter-left-bottom host-up-50" }, // Q6 (Page 7) move up 50px
+  { side: "left", bubble: false, hostClass: "host-mid-left host-far-left" }, // Q7 (Page 8)
+  { side: "right", bubble: true, bubblePos: "above", hostClass: "host-mid-right host-far-right" } // Q8 (Page 9)
+];
+
+const extraUiConfig = [
+  { side: "right", bubble: true, bubblePos: "above", hostClass: "host-mid-right host-far-right" },
+  { side: "left", bubble: true, bubblePos: "above", hostClass: "host-mid-left host-far-left" },
+  { side: "right", bubble: true, bubblePos: "above", hostClass: "host-mid-right host-far-right" },
+  { side: "left", bubble: true, bubblePos: "above", hostClass: "host-mid-left host-far-left" },
+  { side: "right", bubble: true, bubblePos: "above", hostClass: "host-mid-right host-far-right" }
+];
+
+function fadeTo(screen) {
+  Object.values(screens).forEach(s => s.classList.remove("active"));
+  screen.classList.add("active");
+}
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume();
+}
+
+function playClickSound() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+  const noise = audioCtx.createBufferSource();
+  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.045, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  }
+  noise.buffer = buffer;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = "lowpass";
+  filter.frequency.value = 950;
+  const hp = audioCtx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 220;
+
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.12, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.028);
+
+  noise.connect(filter);
+  filter.connect(hp);
+  hp.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  noise.start(now);
+  noise.stop(now + 0.06);
+}
+
+function renderQuestion() {
+  const list = flow === "extra" ? extraQuestions : questions;
+  const idx = flow === "extra" ? extraStep : step;
+  const visualIndex = idx;
+  const q = list[idx];
+  document.getElementById("question").innerText = q.text;
+  const total = list.length;
+  const progress = document.getElementById("progress");
+  if (progress) progress.innerText = `Question ${idx + 1} of ${total}`;
+  hostQuiz.src = flow === "extra" ? getHostPoseExtra(visualIndex) : getHostPose(visualIndex);
+  const cfg = (flow === "extra" ? extraUiConfig : uiConfig)[visualIndex] || {};
+  const sideClass = cfg.side === "left" ? "host-side-left" : "host-side-right";
+  hostWrapQuiz.className = `host-wrap ${sideClass} ${cfg.hostClass || ""}`;
+  if (cfg.bubble) {
+    bubbleQuiz.style.display = "block";
+    bubbleQuiz.innerText = getWittyTip(step);
+    bubbleQuiz.className = "bubble";
+    bubbleQuiz.classList.add(sideClass === "host-side-left" ? "bubble-left" : "bubble-right");
+    bubbleQuiz.classList.add(cfg.bubblePos === "below" ? "bubble-below" : "bubble-above");
+    if (cfg.bubbleSize === "small") bubbleQuiz.classList.add("bubble-small");
+    if (cfg.bubbleClass) bubbleQuiz.classList.add(cfg.bubbleClass);
+    if (step === 7) bubbleQuiz.classList.add("bubble-fit");
+  } else {
+    bubbleQuiz.style.display = "none";
+  }
+
+  const answersDiv = document.getElementById("answers");
+  answersDiv.innerHTML = "";
+
+  q.answers.forEach(a => {
+    const btn = document.createElement("button");
+    btn.innerText = a;
+    btn.onclick = () => {
+      initAudio();
+      playClickSound();
+      if (flow === "extra") {
+        extraState[q.id] = a;
+        extraStep++;
+        extraStep < extraQuestions.length
+          ? fadeOutIn(renderQuestion)
+          : fadeOutIn(showResult2);
+      } else {
+        state[q.id] = a;
+        step++;
+        step < questions.length
+          ? fadeOutIn(renderQuestion)
+          : fadeOutIn(showResult);
+      }
+    };
+    answersDiv.appendChild(btn);
+  });
+}
+
+function fadeOutIn(callback) {
+  screens.quiz.classList.add("fade-out");
+  setTimeout(() => {
+    screens.quiz.classList.remove("fade-out");
+    callback();
+  }, 400);
+}
+
+function showResult() {
+  fadeTo(screens.loading);
+  const loadingText = document.getElementById("loadingText");
+  loadingText.classList.remove("fade");
+  setLoadingText("Crunching numbers");
+  startDots();
+  setTimeout(() => {
+    loadingText.classList.add("fade");
+    setTimeout(() => {
+      setLoadingText("Calculating ideal platform to get to started");
+      loadingText.classList.remove("fade");
+    }, 600);
+  }, 5000);
+
+  setTimeout(() => {
+    stopDots();
+    fadeTo(screens.result);
+    const r = decidePlatform(state);
+    lastPlatform = r.platform;
+    document.getElementById("resultTitle").innerText = "Based on your selected inputs";
+    document.getElementById("resultPlatform").innerText = r.platform;
+    document.getElementById("resultReason").innerText = r.reason;
+    document.getElementById("resultNext").innerText = r.next || "";
+    document.getElementById("resultWarning").innerText = r.warning || "";
+    const logo = document.getElementById("resultLogo");
+    logo.style.display = "none";
+  }, 9000);
+}
+
+function showResult2() {
+  fadeTo(screens.result2);
+  const r = decidePlatformExtended(state, extraState);
+  lastPlatform = r.platform;
+  document.getElementById("result2Title").innerText = "Based on your selected inputs";
+  document.getElementById("result2Platform").innerText = r.platform;
+  document.getElementById("result2Reason").innerText = r.reason;
+  document.getElementById("result2Next").innerText = r.next || "";
+  document.getElementById("result2Warning").innerText = r.warning || "";
+}
+
+function encodeState(obj) {
+  try {
+    return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(obj)))));
+  } catch (e) {
+    return "";
+  }
+}
+
+function decodeState(str) {
+  try {
+    return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(str)))));
+  } catch (e) {
+    return null;
+  }
+}
+
+function buildShareLink(includeExtra) {
+  const url = new URL(window.location.href.split("#")[0]);
+  url.searchParams.set("s", encodeState(state));
+  if (includeExtra) url.searchParams.set("e", encodeState(extraState));
+  return url.toString();
+}
+
+async function copyShareLink(includeExtra) {
+  const link = buildShareLink(includeExtra);
+  try {
+    await navigator.clipboard.writeText(link);
+    alert("Shareable link copied.");
+  } catch (e) {
+    prompt("Copy this link:", link);
+  }
+}
+
+function setLoadingText(text) {
+  const textNode = document.getElementById("loadingText").childNodes[0];
+  if (textNode) {
+    textNode.nodeValue = text;
+  }
+}
+
+function startDots() {
+  stopDots();
+  const frames = ["", ".", "..", "..."];
+  let i = 0;
+  dotsTimer = setInterval(() => {
+    loadingDots.innerText = frames[i % frames.length];
+    i++;
+  }, 500);
+}
+
+function stopDots() {
+  if (dotsTimer) {
+    clearInterval(dotsTimer);
+    dotsTimer = null;
+  }
+  loadingDots.innerText = "";
+}
+
+function getHostPose(index) {
+  if (index === 0) return "images/host_coin.png";
+  if (index === 1) return "images/pose1_thinker.png";
+  if (index === 2) return "images/host_think.png";
+  if (index === 3) return "images/pose2_money_lean.png";
+  if (index === 4) return "images/host_think.png";
+  if (index === 5) return "images/host_confident.png";
+  if (index === 6) return "images/host_coin.png";
+  return "images/host_think.png";
+}
+
+function getHostPoseExtra(index) {
+  if (index === 0) return "images/pose1_thinker.png";
+  if (index === 1) return "images/host_think.png";
+  if (index === 2) return "images/pose2_money_lean.png";
+  if (index === 3) return "images/host_confident.png";
+  return "images/host_coin.png";
+}
+
+function getWittyTip(index) {
+  const tips = [
+    "First step: choose the journey, not the jackpot.",
+    "Confidence beats confusion—slow and steady counts.",
+    "FX fees: the sneaky tax on jet‑setting capital.",
+    "Low fees are the quiet compounding engine.",
+    "Subscriptions are like umbrellas—useful when it rains.",
+    "Control level set—autopilot or manual transmission?",
+    "ETFs: the buffet. Stock picks: the chef’s table.",
+    "What is CHESS Sponsorship? Certain platforms register investments directly in your name via ASX CHESS. Others operate under custodial structures."
+  ];
+  return tips[index] || "";
+}
+
+const platforms = [
+  { name: "CMC Markets Invest", chess: true, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 1, cost: 1, subscription: false, simplicity: 2, info_rich: 1, advanced_tools: 1, mobile_first: 1, desktop_power: 1, analytics_depth: 1, education_guidance: 1 },
+  { name: "Stake", chess: true, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 1, cost: 2, subscription: false, simplicity: 2, info_rich: 1, advanced_tools: 1, mobile_first: 2, desktop_power: 1, analytics_depth: 1, education_guidance: 1 },
+  { name: "Interactive Brokers Australia", chess: true, intl: true, fxLow: true, robo: false, micro: false, etf: true, trading: true, complexity: 3, cost: 1, subscription: false, simplicity: 0, info_rich: 1, advanced_tools: 2, mobile_first: 1, desktop_power: 2, analytics_depth: 2, education_guidance: 0 },
+  { name: "Saxo Invested", chess: false, intl: true, fxLow: true, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 2, subscription: false, simplicity: 1, info_rich: 2, advanced_tools: 2, mobile_first: 1, desktop_power: 2, analytics_depth: 2, education_guidance: 0 },
+  { name: "Webull", chess: false, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 2, subscription: false, simplicity: 1, info_rich: 2, advanced_tools: 2, mobile_first: 2, desktop_power: 1, analytics_depth: 2, education_guidance: 0 },
+  { name: "Moomoo", chess: false, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 2, subscription: false, simplicity: 1, info_rich: 2, advanced_tools: 2, mobile_first: 2, desktop_power: 1, analytics_depth: 2, education_guidance: 0 },
+  { name: "Superhero", chess: true, intl: false, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 1, cost: 1, subscription: false, simplicity: 2, info_rich: 1, advanced_tools: 0, mobile_first: 2, desktop_power: 0, analytics_depth: 1, education_guidance: 1 },
+  { name: "Easy Equities", chess: true, intl: false, fxLow: false, robo: false, micro: false, etf: true, trading: false, complexity: 1, cost: 1, subscription: false, simplicity: 2, info_rich: 0, advanced_tools: 0, mobile_first: 2, desktop_power: 0, analytics_depth: 0, education_guidance: 1 },
+  { name: "Pearler", chess: true, intl: false, fxLow: false, robo: true, micro: false, etf: true, trading: false, complexity: 1, cost: 2, subscription: true, simplicity: 2, info_rich: 1, advanced_tools: 0, mobile_first: 1, desktop_power: 1, analytics_depth: 1, education_guidance: 2 },
+  { name: "SelfWealth", chess: true, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 2, subscription: true, simplicity: 1, info_rich: 2, advanced_tools: 1, mobile_first: 1, desktop_power: 2, analytics_depth: 2, education_guidance: 1 },
+  { name: "CommSec", chess: true, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 3, subscription: false, simplicity: 1, info_rich: 2, advanced_tools: 1, mobile_first: 1, desktop_power: 2, analytics_depth: 2, education_guidance: 1 },
+  { name: "NABtrade", chess: true, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 3, subscription: false, simplicity: 1, info_rich: 2, advanced_tools: 1, mobile_first: 1, desktop_power: 2, analytics_depth: 2, education_guidance: 1 },
+  { name: "Bell Direct", chess: true, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 3, subscription: false, simplicity: 1, info_rich: 2, advanced_tools: 1, mobile_first: 1, desktop_power: 2, analytics_depth: 2, education_guidance: 1 },
+  { name: "IG Share Trading", chess: true, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 3, subscription: false, simplicity: 1, info_rich: 2, advanced_tools: 1, mobile_first: 1, desktop_power: 2, analytics_depth: 2, education_guidance: 0 },
+  { name: "eToro", chess: false, intl: true, fxLow: false, robo: false, micro: false, etf: false, trading: true, complexity: 2, cost: 3, subscription: false, simplicity: 1, info_rich: 1, advanced_tools: 1, mobile_first: 2, desktop_power: 1, analytics_depth: 1, education_guidance: 0 },
+  { name: "Tiger Brokers", chess: false, intl: true, fxLow: false, robo: false, micro: false, etf: true, trading: true, complexity: 2, cost: 2, subscription: false, simplicity: 1, info_rich: 2, advanced_tools: 2, mobile_first: 2, desktop_power: 1, analytics_depth: 2, education_guidance: 0 },
+  { name: "Syfe", chess: false, intl: true, fxLow: false, robo: true, micro: false, etf: true, trading: false, complexity: 1, cost: 2, subscription: true, simplicity: 2, info_rich: 0, advanced_tools: 0, mobile_first: 2, desktop_power: 0, analytics_depth: 0, education_guidance: 2 },
+  { name: "Stockspot", chess: false, intl: true, fxLow: false, robo: true, micro: false, etf: true, trading: false, complexity: 1, cost: 2, subscription: true, simplicity: 2, info_rich: 0, advanced_tools: 0, mobile_first: 1, desktop_power: 1, analytics_depth: 0, education_guidance: 2 },
+  { name: "Raiz", chess: false, intl: false, fxLow: false, robo: true, micro: true, etf: true, trading: false, complexity: 1, cost: 2, subscription: true, simplicity: 2, info_rich: 0, advanced_tools: 0, mobile_first: 2, desktop_power: 0, analytics_depth: 0, education_guidance: 2 },
+  { name: "CommSec Pocket", chess: false, intl: false, fxLow: false, robo: false, micro: true, etf: true, trading: false, complexity: 1, cost: 2, subscription: false, simplicity: 2, info_rich: 0, advanced_tools: 0, mobile_first: 2, desktop_power: 0, analytics_depth: 0, education_guidance: 1 },
+  { name: "Betashares Direct", chess: false, intl: false, fxLow: false, robo: false, micro: false, etf: true, trading: false, complexity: 1, cost: 1, subscription: false, simplicity: 2, info_rich: 0, advanced_tools: 0, mobile_first: 1, desktop_power: 1, analytics_depth: 0, education_guidance: 1 },
+  { name: "Sharesies", chess: false, intl: true, fxLow: false, robo: false, micro: true, etf: true, trading: true, complexity: 1, cost: 2, subscription: false, simplicity: 2, info_rich: 1, advanced_tools: 1, mobile_first: 2, desktop_power: 0, analytics_depth: 1, education_guidance: 1 }
+];
+
+const blurbs = {
+    "CMC Markets Invest": {
+      reason: "Commonly associated with lower brokerage structures and CHESS registration, with a straightforward interface for many users.",
+      next: "Next steps (general information only): consider a starter ETF or share, confirm any minimums, and set a regular contribution cadence if that aligns with personal goals."
+    },
+    "Stake": {
+      reason: "Often used by investors seeking a simpler interface with CHESS sponsorship and access to local and overseas markets.",
+      next: "Next steps (general information only): consider reviewing FX fees for international trades and testing with a small amount if appropriate."
+    },
+    "Interactive Brokers Australia": {
+      reason: "Commonly associated with tighter FX pricing and broad international access, especially for cost‑aware global trading.",
+      next: "Next steps (general information only): consider enabling market permissions, reviewing FX settings, and testing with a small trade if suitable."
+    },
+    "Saxo Invested": {
+      reason: "Often used by investors wanting global access with a polished interface, at higher trading and FX costs than some competitors.",
+      next: "Next steps (general information only): consider verifying product access and checking FX costs before increasing trade size."
+    },
+    "Webull": {
+      reason: "Often used by investors seeking app‑first tools and low headline brokerage for active trading.",
+      next: "Next steps (general information only): consider reviewing custody and FX terms and using a defined watchlist to start."
+    },
+    "Moomoo": {
+      reason: "Commonly associated with low brokerage and feature‑rich tools for self‑directed investors.",
+      next: "Next steps (general information only): consider confirming market access and beginning with a small position if appropriate."
+    },
+    "Superhero": {
+      reason: "Often used by investors seeking lower‑cost access to ASX ETFs and shares with a simple interface.",
+      next: "Next steps (general information only): consider verifying CHESS options and starting with a diversified ETF if that fits objectives."
+    },
+    "Easy Equities": {
+      reason: "Often used by investors seeking lower‑cost access and a simple ETF‑focused experience.",
+      next: "Next steps (general information only): consider a diversified ETF and automating small contributions if suitable."
+    },
+    "Pearler": {
+      reason: "Often used by long‑term investors who want habit‑building tools alongside CHESS ownership.",
+      next: "Next steps (general information only): consider a portfolio plan and recurring buys if that matches preferences."
+    },
+    "SelfWealth": {
+      reason: "Commonly associated with flat‑fee trading, which can be preferred by more frequent traders.",
+      next: "Next steps (general information only): consider checking fee thresholds and whether any subscription value fits trading frequency."
+    },
+    "CommSec": {
+      reason: "Often used by investors prioritising a full‑service brokerage experience with broad market access.",
+      next: "Next steps (general information only): consider comparing fees and confirming international trading settings if needed."
+    },
+    "NABtrade": {
+      reason: "Commonly associated with bank‑backed access and CHESS ownership, with standard brokerage pricing.",
+      next: "Next steps (general information only): consider reviewing brokerage costs and setting up trade permissions if required."
+    },
+    "Bell Direct": {
+      reason: "Often used by investors seeking research tools and a full‑service brokerage experience.",
+      next: "Next steps (general information only): consider comparing brokerage tiers and confirming product access."
+    },
+    "IG Share Trading": {
+      reason: "Often used by investors seeking feature‑rich tools and broad market access.",
+      next: "Next steps (general information only): consider reviewing the fee schedule and confirming international access."
+    },
+    "eToro": {
+      reason: "Often used by investors interested in social or thematic features with a simple UI.",
+      next: "Next steps (general information only): consider reviewing spreads and FX costs before increasing trade size."
+    },
+    "Tiger Brokers": {
+      reason: "Commonly associated with lower brokerage and international access for active traders.",
+      next: "Next steps (general information only): consider checking custody terms and FX fees for overseas trades."
+    },
+    "Syfe": {
+      reason: "Often used by investors seeking hands‑off managed portfolios and automation.",
+      next: "Next steps (general information only): consider choosing a risk profile and setting a recurring contribution."
+    },
+    "Stockspot": {
+      reason: "Often used by investors seeking robo‑advisor style portfolios with automated diversification.",
+      next: "Next steps (general information only): consider selecting a risk level and reviewing ongoing fees."
+    },
+    "Raiz": {
+      reason: "Commonly associated with micro‑investing, rounding features, and small‑balance convenience.",
+      next: "Next steps (general information only): consider linking a bank account and choosing a conservative starter portfolio if appropriate."
+    },
+    "CommSec Pocket": {
+      reason: "Often used by investors seeking simple ETF investing in small parcels with a bank‑backed app.",
+      next: "Next steps (general information only): consider a starter ETF bundle and a regular deposit if that aligns with goals."
+    },
+    "Betashares Direct": {
+      reason: "Commonly associated with lower‑cost ETF access and a clean, simple interface.",
+      next: "Next steps (general information only): consider a core ETF and review any custody details."
+    },
+    "Sharesies": {
+      reason: "Often used by investors seeking accessible investing with fractional options and a simple UI.",
+      next: "Next steps (general information only): consider confirming the custody model and starting with a small ETF position if suitable."
+    }
+};
+
+function scorePlatform(p, s, extra) {
+  const wantsCHESS = s.chess.startsWith("I'm choosing yes");
+  const market = s.market;
+  const fees = s.fees;
+  const control = s.control;
+  const experience = s.experience;
+  const style = s.style;
+  const intent = s.intent;
+  const subscription = s.subscription;
+
+  let score = 0;
+
+  if (control === "I'm set and forget") {
+    if (p.robo || p.micro) score += 4;
+    if (p.trading) score -= 2;
+  }
+  if (control === "I want some control") {
+    if (p.trading && p.etf) score += 2;
+    if (p.robo) score += 1;
+  }
+  if (control === "I want full control") {
+    if (p.trading) score += 4;
+    if (p.robo || p.micro) score -= 3;
+  }
+
+  if (market !== "I'm investing in Australia only") {
+    if (p.intl) score += 3;
+    if (p.fxLow) score += 2;
+  } else {
+    if (!p.intl) score += 1;
+  }
+
+  if (fees === "Extremely important") {
+    if (p.cost === 1) score += 3;
+    if (p.cost === 3) score -= 2;
+    if (p.subscription) score -= 2;
+  } else if (fees === "Important") {
+    if (p.cost === 1) score += 2;
+    if (p.cost === 3) score -= 1;
+  }
+
+  if (subscription === "Yes") {
+    if (p.subscription) score += 2;
+  } else if (subscription === "No") {
+    if (p.subscription) score -= 2;
+  }
+
+  if (experience === "I'm new to this") {
+    if (p.complexity >= 2) score -= 2;
+  }
+  if (experience === "I'm very confident") {
+    if (p.complexity >= 2) score += 1;
+  }
+
+  if (style === "I'm choosing simple diversified ETFs") {
+    if (p.etf) score += 3;
+    if (p.trading && !p.etf) score -= 1;
+  }
+  if (style === "I'm picking my own investments") {
+    if (p.trading) score += 3;
+    if (p.robo || p.micro) score -= 2;
+  }
+
+  if (intent === "I'm dipping my toes in") {
+    if (p.micro || p.robo) score += 2;
+    if (p.complexity >= 2) score -= 1;
+  }
+  if (intent === "I'm looking for higher returns") {
+    if (p.trading) score += 2;
+  }
+  if (intent === "I'm playing the long-term game") {
+    if (p.etf) score += 2;
+    if (p.robo) score += 1;
+  }
+
+  if (wantsCHESS && p.chess) score += 2;
+
+  if (extra) {
+    if (extra.ui_load === "Extremely simple and minimal") score += p.simplicity;
+    if (extra.ui_load === "Clean but information-rich") score += p.info_rich;
+    if (extra.ui_load === "Advanced with deep tools") score += p.advanced_tools;
+
+    if (extra.research_pref === "Minimal research / quick decisions") score += p.simplicity;
+    if (extra.research_pref === "Some research before investing") score += p.info_rich;
+    if (extra.research_pref === "Deep analysis and data-driven decisions") score += p.advanced_tools;
+
+    if (extra.device_pref === "Mostly mobile") score += p.mobile_first;
+    if (extra.device_pref === "Mobile and desktop equally") score += (p.mobile_first + p.desktop_power) / 2;
+    if (extra.device_pref === "Mostly desktop") score += p.desktop_power;
+
+    if (extra.visibility_pref === "Just performance & basics") score += p.simplicity;
+    if (extra.visibility_pref === "Balanced overview & metrics") score += p.info_rich;
+    if (extra.visibility_pref === "Full analytics & breakdowns") score += p.analytics_depth;
+
+    if (extra.guidance_pref === "Very little / independent use") score += p.advanced_tools;
+    if (extra.guidance_pref === "Helpful but not intrusive") score += p.education_guidance;
+    if (extra.guidance_pref === "Strong guidance & learning tools") score += p.education_guidance * 2;
+  }
+
+  return score;
+}
+
+function decidePlatform(s) {
+  return decidePlatformExtended(s, null);
+}
+
+function decidePlatformExtended(s, extra) {
+  const wantsCHESS = s.chess.startsWith("I'm choosing yes");
+  const filtered = platforms.filter(p => wantsCHESS ? p.chess : true);
+  const ranked = filtered
+    .map(p => ({ ...p, score: scorePlatform(p, s, extra) }))
+    .sort((a, b) => b.score - a.score);
+
+  const winner = ranked[0] || { name: "CMC Markets Invest" };
+  const blurb = blurbs[winner.name] || blurbs["CMC Markets Invest"];
+  return {
+    platform: winner.name,
+    reason: blurb.reason,
+    next: blurb.next,
+    warning: winner.subscription ? "General information only: subscription fees may outweigh savings for smaller balances." : ""
+  };
+}
+
+function updateCalculator() {
+  const initial = parseFloat(document.getElementById("c_initial").value) || 0;
+  const annual = parseFloat(document.getElementById("c_annual").value) || 0;
+  const years = Math.max(0, Math.round(parseFloat(document.getElementById("c_years").value) || 0));
+  const expected = (parseFloat(document.getElementById("c_return").value) || 0) / 100;
+  const platformFee = (parseFloat(document.getElementById("c_platform_fee").value) || 0) / 100;
+  const etfFee = (parseFloat(document.getElementById("c_etf_fee").value) || 0) / 100;
+  const subInitial = parseFloat(document.getElementById("c_sub_initial").value) || 0;
+  const brokerage = parseFloat(document.getElementById("c_brokerage").value) || 0;
+  const trades = parseFloat(document.getElementById("c_trades").value) || 0;
+  const fx = (parseFloat(document.getElementById("c_fx").value) || 0) / 100;
+  const annualBrokerage = brokerage * trades;
+  const effectiveAnnual = Math.max(0, annual - annualBrokerage);
+  const rNet = expected - (platformFee + etfFee + fx);
+
+  const fvWith = futureValue(Math.max(0, initial - subInitial), effectiveAnnual, rNet, years);
+  const fvWithout = futureValue(initial, annual, expected, years);
+  const feeDrag = Math.max(0, fvWithout - fvWith);
+  const feeDragPct = fvWithout > 0 ? (feeDrag / fvWithout) * 100 : 0;
+  const platformCost = platformFee * averageBalance(initial, annual, expected, years);
+  const etfCost = etfFee * averageBalance(initial, annual, expected, years);
+  const fxCost = fx * averageBalance(initial, annual, expected, years);
+
+  const fmt = new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 });
+  const out = document.getElementById("calcOutput");
+  out.innerHTML = `
+    <div>Future value with fees: ${fmt.format(fvWith)}</div>
+    <div>Future value without fees: ${fmt.format(fvWithout)}</div>
+    <div>Total estimated cost of fees: ${fmt.format(feeDrag)}</div>
+    <div>Fee drag percentage: ${feeDragPct.toFixed(2)}%</div>
+    <div>Fee breakdown: Platform ${fmt.format(platformCost)}, ETF ${fmt.format(etfCost)}, FX ${fmt.format(fxCost)}</div>
+  `;
+
+  drawChart(
+    Math.max(0, initial - subInitial),
+    annual,
+    effectiveAnnual,
+    expected,
+    rNet,
+    years
+  );
+}
+
+function applyPlatformPreset(platform) {
+  const presets = {
+    "CMC Markets Invest": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0.6 },
+    "Stake": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0.7 },
+    "Interactive Brokers Australia": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0.03 },
+    "Saxo Invested": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0.25 },
+    "Webull": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0.5 },
+    "Moomoo": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0.55 },
+    "Superhero": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0.65 },
+    "Easy Equities": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0.7 },
+    "Pearler": { platformFee: 0.2, etfFee: 0.2, subInitial: 0, fx: 0.6 },
+    "SelfWealth": { platformFee: 0.2, etfFee: 0.2, subInitial: 0, fx: 0.7 },
+    "CommSec": { platformFee: 0.25, etfFee: 0.2, subInitial: 0, fx: 0.7 },
+    "NABtrade": { platformFee: 0.25, etfFee: 0.2, subInitial: 0, fx: 0.7 },
+    "Bell Direct": { platformFee: 0.25, etfFee: 0.2, subInitial: 0, fx: 0.7 },
+    "IG Share Trading": { platformFee: 0.25, etfFee: 0.2, subInitial: 0, fx: 0.7 },
+    "eToro": { platformFee: 0.3, etfFee: 0.2, subInitial: 0, fx: 0.9 },
+    "Tiger Brokers": { platformFee: 0.2, etfFee: 0.2, subInitial: 0, fx: 0.6 },
+    "Syfe": { platformFee: 0.35, etfFee: 0.2, subInitial: 0, fx: 0.6 },
+    "Stockspot": { platformFee: 0.5, etfFee: 0.2, subInitial: 0, fx: 0.6 },
+    "Raiz": { platformFee: 0.5, etfFee: 0.2, subInitial: 0, fx: 0 },
+    "CommSec Pocket": { platformFee: 0.2, etfFee: 0.2, subInitial: 0, fx: 0 },
+    "Betashares Direct": { platformFee: 0, etfFee: 0.2, subInitial: 0, fx: 0 },
+    "Sharesies": { platformFee: 0.3, etfFee: 0.2, subInitial: 0, fx: 0.6 }
+  };
+
+  const preset = presets[platform];
+  if (!preset) return;
+  document.getElementById("c_platform_fee").value = preset.platformFee;
+  document.getElementById("c_etf_fee").value = preset.etfFee;
+  document.getElementById("c_sub_initial").value = preset.subInitial;
+  document.getElementById("c_fx").value = preset.fx;
+}
+
+function futureValue(initial, annual, rate, years) {
+  if (rate === 0) return initial + annual * years;
+  const growth = Math.pow(1 + rate, years);
+  return initial * growth + annual * ((growth - 1) / rate);
+}
+
+function drawChart(initial, annual, effectiveAnnual, r, rNet, years) {
+  const canvas = document.getElementById("calcChart");
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
+  const padding = 40;
+  const duration = 2000;
+
+  const seriesWithout = [];
+  const seriesWith = [];
+  for (let y = 0; y <= years; y++) {
+    seriesWithout.push(futureValue(initial, annual, r, y));
+    seriesWith.push(futureValue(initial, effectiveAnnual, rNet, y));
+  }
+
+  const maxVal = Math.max(...seriesWithout, ...seriesWith, 1);
+  chartState = { seriesWithout, seriesWith, maxVal, years, render: null, hoverX: null };
+
+  const start = performance.now();
+  function animate(now) {
+    const t = Math.min(1, (now - start) / duration);
+    const tEase = 1 - Math.pow(1 - t, 3);
+    renderChart(tEase);
+    if (t < 1) requestAnimationFrame(animate);
+  }
+
+  function drawLine(series, t, color) {
+    const points = Math.floor(series.length * t);
+    const denom = Math.max(1, series.length - 1);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < points; i++) {
+      const x = padding + (i / denom) * (width - 2 * padding);
+      const y = height - padding - (series[i] / maxVal) * (height - 2 * padding);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+
+  function drawAxes() {
+    // axes
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.font = "12px system-ui, sans-serif";
+    ctx.fillText("Years", width - padding - 30, height - 10);
+    ctx.save();
+    ctx.translate(12, padding);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText("Portfolio Value (AUD)", 0, 0);
+    ctx.restore();
+
+    // ticks
+    const yTicks = 4;
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    for (let i = 0; i <= yTicks; i++) {
+      const y = height - padding - (i / yTicks) * (height - 2 * padding);
+      ctx.beginPath();
+      ctx.moveTo(padding, y);
+      ctx.lineTo(width - padding, y);
+      ctx.stroke();
+      const labelVal = Math.round((i / yTicks) * maxVal);
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.font = "10px system-ui, sans-serif";
+      ctx.fillText(formatShort(labelVal), 6, y + 3);
+    }
+    const xTicks = Math.max(1, Math.min(5, years));
+    for (let i = 0; i <= xTicks; i++) {
+      const x = padding + (i / xTicks) * (width - 2 * padding);
+      ctx.beginPath();
+      ctx.moveTo(x, height - padding);
+      ctx.lineTo(x, height - padding + 6);
+      ctx.stroke();
+      const yearLabel = Math.round((i / xTicks) * years);
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.font = "10px system-ui, sans-serif";
+      ctx.fillText(yearLabel.toString(), x - 6, height - padding + 18);
+    }
+  }
+
+  function drawHover() {
+    if (!chartState || chartState.hoverX == null) return;
+    const t = Math.max(0, Math.min(1, (chartState.hoverX - padding) / (width - 2 * padding)));
+    const denom = Math.max(1, seriesWithout.length - 1);
+    const idx = Math.round(t * denom);
+    const x = padding + (idx / denom) * (width - 2 * padding);
+
+    const y1 = height - padding - (seriesWithout[idx] / maxVal) * (height - 2 * padding);
+    const y2 = height - padding - (seriesWith[idx] / maxVal) * (height - 2 * padding);
+
+    ctx.strokeStyle = "rgba(255,255,255,0.25)";
+    ctx.beginPath();
+    ctx.moveTo(x, padding);
+    ctx.lineTo(x, height - padding);
+    ctx.stroke();
+
+    drawDot(x, y1, "rgba(255,255,255,0.9)");
+    drawDot(x, y2, "rgba(39,209,124,0.95)");
+
+    const fmt = new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD", maximumFractionDigits: 0 });
+    const label = `Year ${idx}: ${fmt.format(seriesWith[idx])} (with fees)`;
+    ctx.fillStyle = "rgba(0,0,0,0.7)";
+    ctx.fillRect(x + 8, padding + 4, 220, 22);
+    ctx.fillStyle = "white";
+    ctx.font = "12px system-ui, sans-serif";
+    ctx.fillText(label, x + 12, padding + 20);
+  }
+
+  function drawDot(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function renderChart(tEase) {
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = "rgba(255,255,255,0.2)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(padding, height - padding);
+    ctx.lineTo(width - padding, height - padding);
+    ctx.lineTo(width - padding, padding);
+    ctx.stroke();
+
+    drawLine(seriesWithout, tEase, "rgba(255,255,255,0.9)");
+    drawLine(seriesWith, tEase, "rgba(39,209,124,0.95)");
+    drawAxes();
+    drawHover();
+  }
+
+  chartState.render = () => renderChart(1);
+
+  requestAnimationFrame(animate);
+}
+
+function averageBalance(initial, annual, r, years) {
+  if (years === 0) return initial;
+  const fv = futureValue(initial, annual, r, years);
+  return (initial + fv) / 2;
+}
+
+function formatShort(value) {
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(0)}k`;
+  return `$${Math.round(value)}`;
+}
+
+
+/* ✅ FIXED START HANDLER */
+screens.welcome.addEventListener("click", () => {
+  const welcome = screens.welcome;
+  const blackout = document.getElementById("blackout");
+  const bubble = document.getElementById("bubbleWelcome");
+  let originX = 50;
+  let originY = 50;
+  if (bubble) {
+    const rect = bubble.getBoundingClientRect();
+    originX = ((rect.left + rect.width / 2) / window.innerWidth) * 100;
+    originY = ((rect.top + rect.height / 2) / window.innerHeight) * 100;
+  }
+  welcome.style.setProperty("--zoom-origin-x", `${originX}%`);
+  welcome.style.setProperty("--zoom-origin-y", `${originY}%`);
+  welcome.classList.add("welcome-zoom");
+  requestAnimationFrame(() => welcome.classList.add("welcome-zoom-active"));
+  setTimeout(() => {
+    blackout.classList.add("show");
+    setTimeout(() => {
+      welcome.style.display = "none";
+      fadeTo(screens.method);
+      setTimeout(showMethodSteps, 200);
+      welcome.classList.remove("welcome-zoom-active", "welcome-zoom");
+      welcome.style.display = "";
+      blackout.classList.remove("show");
+    }, 200);
+  }, 3000);
+}, { once: true });
+
+screens.method.addEventListener("click", () => {
+  fadeTo(screens.quiz);
+  setTimeout(renderQuestion, 900);
+}, { once: true });
+
+btnMoreQs.addEventListener("click", () => {
+  initAudio();
+  playClickSound();
+  flow = "extra";
+  extraStep = 0;
+  fadeTo(screens.quiz);
+  setTimeout(renderQuestion, 200);
+});
+
+btnCalculator.addEventListener("click", () => {
+  initAudio();
+  playClickSound();
+  fadeTo(screens.calculator);
+  setTimeout(() => {
+    applyPlatformPreset(lastPlatform);
+    updateCalculator();
+  }, 100);
+});
+
+btnShareResult.addEventListener("click", () => {
+  initAudio();
+  playClickSound();
+  copyShareLink(false);
+});
+btnShareResult2.addEventListener("click", () => {
+  initAudio();
+  playClickSound();
+  copyShareLink(true);
+});
+
+btnRestart2.addEventListener("click", () => {
+  resetToStart();
+});
+btnRestartCalc.addEventListener("click", () => {
+  resetToStart();
+});
+
+["c_initial","c_annual","c_years","c_return","c_platform_fee","c_etf_fee","c_sub_initial","c_brokerage","c_trades","c_fx"].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("input", () => updateCalculator());
+});
+
+// Smooth hover tooltip handling
+const calcCanvas = document.getElementById("calcChart");
+if (calcCanvas && !calcCanvas._hoverBound) {
+  calcCanvas.addEventListener("mousemove", (e) => {
+    const rect = calcCanvas.getBoundingClientRect();
+    if (chartState) {
+      chartState.hoverX = e.clientX - rect.left;
+      if (chartState.render) chartState.render();
+    }
+  });
+  calcCanvas.addEventListener("mouseleave", () => {
+    if (chartState) {
+      chartState.hoverX = null;
+      if (chartState.render) chartState.render();
+    }
+  });
+  calcCanvas._hoverBound = true;
+}
+
+function showMethodSteps() {
+  const title = document.getElementById("methodTitle");
+  const subtitle = document.getElementById("methodSubtitle");
+  const oscar = document.getElementById("hostOscarWrap");
+  const bubble = document.getElementById("bubbleMethod");
+  const p1 = document.getElementById("m1");
+  const p2 = document.getElementById("m2");
+  const p3 = document.getElementById("m3");
+  const cont = document.getElementById("methodContinue");
+  const footer = document.getElementById("methodFooter");
+
+  // T0: title fades in over 2s
+  setTimeout(() => title.classList.add("show"), 0);
+  // T+1s: subtitle fades in
+  setTimeout(() => subtitle.classList.add("show"), 1000);
+  // T+3s: Oscar appears
+  setTimeout(() => oscar.classList.add("show"), 3000);
+  // T+4s: speech bubble appears
+  setTimeout(() => bubble.classList.add("show"), 4000);
+  // T+9s: paragraph 1 slides in
+  setTimeout(() => p1.classList.add("show"), 9000);
+  // T+14s: paragraph 2 slides in
+  setTimeout(() => p2.classList.add("show"), 14000);
+  // T+19s: paragraph 3 slides in
+  setTimeout(() => p3.classList.add("show"), 19000);
+  // T+21s: continue prompt and footer fade in
+  setTimeout(() => {
+    cont.classList.add("show");
+    if (footer) footer.classList.add("show");
+  }, 21000);
+}
+
+function resetToStart() {
+  step = 0;
+  extraStep = 0;
+  flow = "base";
+  for (const key in state) delete state[key];
+  for (const key in extraState) delete extraState[key];
+  fadeTo(screens.welcome);
+}
+
+function handleDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const base = params.get("s");
+  const extra = params.get("e");
+  if (!base) return;
+  const decodedBase = decodeState(base);
+  if (!decodedBase) return;
+  Object.assign(state, decodedBase);
+  if (extra) {
+    const decodedExtra = decodeState(extra);
+    if (decodedExtra) Object.assign(extraState, decodedExtra);
+    showResult2();
+  } else {
+    const r = decidePlatform(state);
+    lastPlatform = r.platform;
+    fadeTo(screens.result);
+    document.getElementById("resultTitle").innerText = "Based on your selected inputs";
+    document.getElementById("resultPlatform").innerText = r.platform;
+    document.getElementById("resultReason").innerText = r.reason;
+    document.getElementById("resultNext").innerText = r.next || "";
+    document.getElementById("resultWarning").innerText = r.warning || "";
+    const logo = document.getElementById("resultLogo");
+    logo.style.display = "none";
+  }
+}
+
+// Dev-only sanity check: enumerate all possible outcomes in console
+function debugEnumerateOutcomes() {
+  const answerSets = questions.map(q => q.answers);
+  const results = new Set();
+
+  function walk(i, current) {
+    if (i === answerSets.length) {
+      const testState = {
+        intent: current[0],
+        experience: current[1],
+        market: current[2],
+        fees: current[3],
+        subscription: current[4],
+        control: current[5],
+        style: current[6],
+        chess: current[7]
+      };
+      results.add(decidePlatform(testState).platform);
+      return;
+    }
+    for (const ans of answerSets[i]) {
+      current[i] = ans;
+      walk(i + 1, current);
+    }
+  }
+
+  walk(0, []);
+  console.log("Unique platform outcomes:", Array.from(results));
+  console.log("Total unique outcomes:", results.size);
+}
+
+handleDeepLink();
+</script>
+
+</body>
+</html>
