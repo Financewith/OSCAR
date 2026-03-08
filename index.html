@@ -130,6 +130,12 @@ button:focus-visible {
   border: 1px solid white;
 }
 
+.btn-cta {
+  padding: 16px 20px;
+  font-size: 1.05rem;
+  border-width: 2px;
+}
+
 .money-man {
   width: 140px;
   margin-bottom: 30px;
@@ -426,11 +432,71 @@ button:focus-visible {
   text-align: left;
 }
 
+/* OSCAR EXPLAINS */
+.explain-wrap {
+  width: min(860px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.explain-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 12px;
+}
+
+.explain-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.explain-field label {
+  font-size: 0.6rem;
+  text-align: left;
+}
+
+.explain-field input,
+.explain-field textarea {
+  background: black;
+  color: white;
+  border: 1px solid white;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.7rem;
+}
+
+.explain-field textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.explain-output {
+  width: 100%;
+  border: 1px solid white;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 0.78rem;
+  text-align: left;
+  min-height: 120px;
+}
+
+.explain-disclaimer {
+  font-size: 0.5rem;
+  color: rgba(255,255,255,0.75);
+  text-align: center;
+}
+
 @media (max-width: 900px) {
   .calc-wrap {
     grid-template-columns: 1fr;
   }
   .calc-canvas { height: 260px; }
+  .explain-row { grid-template-columns: 1fr; }
 }
 
 /* WELCOME ZOOM TRANSITION */
@@ -633,6 +699,9 @@ button:focus-visible {
       <button id="btnCalculator" class="btn-secondary">Fee impact calculator</button>
     </div>
     <div class="btn-row">
+      <button id="btnExplains" class="btn-cta">OSCAR EXPLAINS</button>
+    </div>
+    <div class="btn-row">
       <button id="btnShareResult" class="btn-secondary">Copy shareable link</button>
     </div>
   </div>
@@ -654,6 +723,9 @@ button:focus-visible {
     <p id="result2Warning"></p>
     <div class="btn-row">
       <button id="btnRestart2">Back to start</button>
+    </div>
+    <div class="btn-row">
+      <button id="btnExplains2" class="btn-cta">OSCAR EXPLAINS</button>
     </div>
     <div class="btn-row">
       <button id="btnShareResult2" class="btn-secondary">Copy shareable link</button>
@@ -732,6 +804,44 @@ button:focus-visible {
   </div>
 </div>
 
+<!-- OSCAR EXPLAINS -->
+<div class="screen" id="explains">
+  <div class="host-wrap host-mid-right host-far-right">
+    <img class="host" src="images/host_think.png" alt="Oscar">
+  </div>
+  <div class="center-content" style="max-width: 920px;">
+    <h2 style="font-size: 1.1rem;">OSCAR EXPLAINS</h2>
+    <div class="explain-wrap">
+      <div class="explain-field">
+        <label>Ask any investing question</label>
+        <textarea id="x_general" placeholder="e.g., What is CHESS sponsorship and why does it matter?"></textarea>
+      </div>
+      <div class="explain-row">
+        <div class="explain-field">
+          <label>Asset class (e.g., Gold, Technology)</label>
+          <input id="x_asset" type="text" placeholder="Gold">
+        </div>
+        <div class="explain-field">
+          <label>Timeframe (e.g., 2022–26)</label>
+          <input id="x_timeframe" type="text" placeholder="2022–26">
+        </div>
+        <div class="explain-field">
+          <label>Specific question</label>
+          <input id="x_question" type="text" placeholder="What risks should be considered?">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="btnAskExplain" class="btn-cta">Ask OSCAR</button>
+        <button id="btnBackFromExplain" class="btn-secondary">Back to results</button>
+      </div>
+      <div class="explain-output" id="explainOutput">Enter a question above to get a general educational explanation.</div>
+      <div class="explain-disclaimer">
+        General information only. OSCAR does not provide financial advice, recommendations, or suitability assessments.
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 const screens = {
   welcome: document.getElementById("welcome"),
@@ -740,7 +850,8 @@ const screens = {
   loading: document.getElementById("loading"),
   result: document.getElementById("result"),
   result2: document.getElementById("result2"),
-  calculator: document.getElementById("calculator")
+  calculator: document.getElementById("calculator"),
+  explains: document.getElementById("explains")
 };
 
 const hostQuiz = document.getElementById("hostQuiz");
@@ -753,6 +864,10 @@ const btnRestart2 = document.getElementById("btnRestart2");
 const btnRestartCalc = document.getElementById("btnRestartCalc");
 const btnShareResult = document.getElementById("btnShareResult");
 const btnShareResult2 = document.getElementById("btnShareResult2");
+const btnExplains = document.getElementById("btnExplains");
+const btnExplains2 = document.getElementById("btnExplains2");
+const btnAskExplain = document.getElementById("btnAskExplain");
+const btnBackFromExplain = document.getElementById("btnBackFromExplain");
 
 let dotsTimer = null;
 let flow = "base";
@@ -1587,6 +1702,64 @@ btnCalculator.addEventListener("click", () => {
     applyPlatformPreset(lastPlatform);
     updateCalculator();
   }, 100);
+});
+
+btnExplains.addEventListener("click", () => {
+  initAudio();
+  playClickSound();
+  fadeTo(screens.explains);
+});
+
+btnExplains2.addEventListener("click", () => {
+  initAudio();
+  playClickSound();
+  fadeTo(screens.explains);
+});
+
+btnBackFromExplain.addEventListener("click", () => {
+  initAudio();
+  playClickSound();
+  if (flow === "extra") fadeTo(screens.result2);
+  else fadeTo(screens.result);
+});
+
+btnAskExplain.addEventListener("click", async () => {
+  initAudio();
+  playClickSound();
+  const output = document.getElementById("explainOutput");
+  const general = document.getElementById("x_general").value.trim();
+  const asset = document.getElementById("x_asset").value.trim();
+  const timeframe = document.getElementById("x_timeframe").value.trim();
+  const question = document.getElementById("x_question").value.trim();
+
+  if (!general && !question && !asset && !timeframe) {
+    output.innerText = "Please enter a question or use the structured fields.";
+    return;
+  }
+
+  const structured = [asset && `Asset class: ${asset}`, timeframe && `Timeframe: ${timeframe}`, question && `Question: ${question}`]
+    .filter(Boolean)
+    .join(" | ");
+
+  const prompt = general || structured;
+  output.innerText = "Generating a general educational explanation...";
+
+  try {
+    const res = await fetch("/api/oscar-explains", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        prompt,
+        style: "medium",
+        context: "General educational information only. Do not provide personal financial advice. Reframe advice-seeking questions into general education."
+      })
+    });
+    if (!res.ok) throw new Error("Request failed");
+    const data = await res.json();
+    output.innerText = data.answer || "No response returned.";
+  } catch (e) {
+    output.innerText = "Unable to reach the explanation service. Please try again later.";
+  }
 });
 
 btnShareResult.addEventListener("click", () => {
