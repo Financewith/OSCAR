@@ -3,20 +3,55 @@
 <head>
 <meta charset="UTF-8" />
 <title>OSCAR</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 
 <style>
+:root {
+  --bg: #070b14;
+  --bg-2: #0b1220;
+  --text: #f5f7fb;
+  --muted: rgba(255,255,255,0.75);
+  --line: rgba(255,255,255,0.18);
+  --accent: #2fe27f;
+  --accent-2: #ff4d4d;
+}
+
 html, body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  background: black;
-  color: white;
-  font-family: system-ui, -apple-system, sans-serif;
-  font-size: 125%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  font-size: 110%;
   line-height: 1.35;
   overflow: hidden;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::before {
+  background:
+    radial-gradient(1200px 700px at 20% 20%, rgba(60, 120, 255, 0.16), transparent 60%),
+    radial-gradient(900px 520px at 80% 60%, rgba(80, 160, 255, 0.12), transparent 60%),
+    linear-gradient(180deg, #0a1222 0%, #070b14 55%, #05070e 100%);
+  opacity: 1;
+}
+
+body::after {
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.035), rgba(255,255,255,0.035) 1px, transparent 1px, transparent 3px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, transparent 1px, transparent 4px);
+  opacity: 0.08;
+  mix-blend-mode: screen;
 }
 
 .screen {
@@ -29,6 +64,7 @@ html, body {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.8s ease;
+  z-index: 1;
 }
 
 .screen.active {
@@ -53,6 +89,7 @@ h1, h2 {
   margin-bottom: 20px;
   max-width: 700px;
   letter-spacing: 0.01em;
+  font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
 }
 
 p {
@@ -92,19 +129,20 @@ p {
 button {
   width: 100%;
   padding: 12px 14px;
-  background: black;
-  color: white;
-  border: 1px solid white;
+  background: #0c1425;
+  color: var(--text);
+  border: 1px solid var(--line);
   border-radius: 10px;
   font-size: 1rem;
   line-height: 1.2;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 
 button:hover {
-  background: white;
-  color: black;
+  background: #121b31;
+  border-color: rgba(255,255,255,0.35);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 
 button:active {
@@ -125,15 +163,17 @@ button:focus-visible {
 }
 
 .btn-secondary {
-  background: black;
-  color: white;
-  border: 1px solid white;
+  background: #0a111f;
+  color: var(--text);
+  border: 1px solid var(--line);
 }
 
 .btn-cta {
   padding: 16px 20px;
   font-size: 1.05rem;
   border-width: 2px;
+  background: linear-gradient(180deg, #18223b, #0e1629);
+  border-color: rgba(255,255,255,0.35);
 }
 
 .money-man {
@@ -174,14 +214,14 @@ button:focus-visible {
   padding: 12px 16px;
   border: 1px solid white;
   border-radius: 14px;
-  background: black;
+  background: #0b1220;
   color: white;
   font-size: 1.05rem;
   line-height: 1.35;
   font-family: "Share Tech Mono", system-ui, -apple-system, sans-serif;
   z-index: 3;
   pointer-events: none;
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
 }
 
 .bubble-fit {
@@ -388,7 +428,7 @@ button:focus-visible {
 }
 
 .calc-output {
-  border: 1px solid white;
+  border: 1px solid var(--line);
   border-radius: 10px;
   padding: 12px;
   font-size: 0.62rem;
@@ -421,9 +461,9 @@ button:focus-visible {
 .calc-canvas {
   width: 100%;
   height: 320px;
-  border: 1px solid white;
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: black;
+  background: #0a111f;
 }
 
 .calc-disclaimer {
@@ -501,13 +541,18 @@ button:focus-visible {
 
 /* WELCOME ZOOM TRANSITION */
 .welcome-zoom {
-  transition: transform 3s ease, opacity 3s ease;
+  transition: transform 2s ease, opacity 2s ease;
   transform-origin: var(--zoom-origin-x, 50%) var(--zoom-origin-y, 50%);
 }
 
 .welcome-zoom-active {
-  transform: scale(5);
+  transform: scale(10);
   opacity: 0.15;
+}
+
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.6; }
 }
 
 /* BLACK FADE BETWEEN WELCOME -> METHOD */
@@ -677,8 +722,10 @@ button:focus-visible {
 
 <!-- LOADING -->
 <div class="screen" id="loading">
-  <div class="spinner"></div>
-  <p id="loadingText" class="loading-text">Crunching numbers<span id="loadingDots"></span></p>
+  <div style="background: rgba(10,17,31,0.72); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:22px 24px; box-shadow:0 18px 40px rgba(0,0,0,0.35);">
+    <canvas id="loadingChart" width="760" height="260" style="border:1px solid rgba(255,255,255,0.2); border-radius:12px; background:#070b18;"></canvas>
+    <p id="loadingText" class="loading-text" style="margin-top:10px;">Crunching numbers<span id="loadingDots"></span></p>
+  </div>
 </div>
 
 <!-- RESULT -->
@@ -686,14 +733,14 @@ button:focus-visible {
   <div class="host-wrap host-mid-left host-far-left" id="hostWrapResult">
     <img class="host" id="hostResult" src="images/pose4_tada_right.png" alt="Host">
   </div>
-  <div class="center-content">
+  <div class="center-content" style="background: rgba(10,17,31,0.72); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:24px 28px; box-shadow:0 18px 40px rgba(0,0,0,0.35);">
     <h2 id="resultTitle" style="font-size: 1.05rem; letter-spacing: 0.02em;"></h2>
     <div id="resultPlatform" style="margin: 10px 0 8px; font-weight: 700; font-size: 1.6rem;"></div>
     <img id="resultLogo" alt="Platform logo" style="display: none;">
     <p id="resultReason" style="font-size: 1.0rem; max-width: 720px;"></p>
     <p id="resultNext" style="font-size: 1.0rem; max-width: 720px;"></p>
     <p id="resultWarning"></p>
-    <p style="font-size: 0.65rem; margin-top: 8px;">Not exactly what you are looking for? Answer a few more Questions or see OSCAR's Fee impact calculator.</p>
+    <p style="font-size: 0.9rem; margin-top: 10px;">Not exactly what you are looking for? Answer a few more Questions or see OSCAR's Fee impact calculator.</p>
     <div class="btn-row">
       <button id="btnMoreQs">5 more Questions</button>
       <button id="btnCalculator" class="btn-secondary">Fee impact calculator</button>
@@ -715,7 +762,7 @@ button:focus-visible {
   <div class="host-wrap host-mid-left host-far-left">
     <img class="host" id="hostResult2" src="images/pose4_tada_right.png" alt="Host">
   </div>
-  <div class="center-content">
+  <div class="center-content" style="background: rgba(10,17,31,0.72); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:24px 28px; box-shadow:0 18px 40px rgba(0,0,0,0.35);">
     <h2 id="result2Title" style="font-size: 1.05rem; letter-spacing: 0.02em;"></h2>
     <div id="result2Platform" style="margin: 10px 0 8px; font-weight: 700; font-size: 1.6rem;"></div>
     <p id="result2Reason" style="font-size: 1.0rem; max-width: 720px;"></p>
@@ -809,7 +856,7 @@ button:focus-visible {
   <div class="host-wrap host-mid-right host-far-right">
     <img class="host" src="images/host_think.png" alt="Oscar">
   </div>
-  <div class="center-content" style="max-width: 920px;">
+  <div class="center-content" style="max-width: 920px; background: rgba(10,17,31,0.72); border:1px solid rgba(255,255,255,0.12); border-radius:16px; padding:24px 28px; box-shadow:0 18px 40px rgba(0,0,0,0.35);">
     <h2 style="font-size: 1.1rem;">OSCAR EXPLAINS</h2>
     <div class="explain-wrap">
       <div class="explain-field">
@@ -875,6 +922,7 @@ let extraStep = 0;
 const extraState = {};
 let lastPlatform = "";
 let chartState = null;
+let loadingAnim = null;
 let audioCtx = null;
 
 const questions = [
@@ -1050,6 +1098,7 @@ function fadeOutIn(callback) {
 }
 
 function showResult() {
+  startLoadingChart();
   fadeTo(screens.loading);
   const loadingText = document.getElementById("loadingText");
   loadingText.classList.remove("fade");
@@ -1065,6 +1114,7 @@ function showResult() {
 
   setTimeout(() => {
     stopDots();
+    stopLoadingChart();
     fadeTo(screens.result);
     const r = decidePlatform(state);
     lastPlatform = r.platform;
@@ -1145,6 +1195,106 @@ function stopDots() {
     dotsTimer = null;
   }
   loadingDots.innerText = "";
+}
+
+function startLoadingChart() {
+  const canvas = document.getElementById("loadingChart");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+  const pad = 28;
+  const duration = 6000;
+  const start = performance.now();
+
+  function lineValue(t, phase) {
+    return (
+      0.5 +
+      0.18 * Math.sin(t * 0.9 + phase) +
+      0.12 * Math.sin(t * 1.7 + phase * 1.4) +
+      0.06 * Math.sin(t * 3.1 + phase * 0.6)
+    );
+  }
+
+  function drawAxes() {
+    ctx.strokeStyle = "rgba(255,255,255,0.18)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, h - pad);
+    ctx.lineTo(w - pad, h - pad);
+    ctx.lineTo(w - pad, pad);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(255,255,255,0.5)";
+    ctx.font = "11px system-ui, sans-serif";
+    ctx.fillText("Time", w - pad - 30, h - 8);
+    ctx.save();
+    ctx.translate(10, pad);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText("Price", 0, 0);
+    ctx.restore();
+
+    const yTicks = 4;
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    for (let i = 0; i <= yTicks; i++) {
+      const y = h - pad - (i / yTicks) * (h - pad * 2);
+      ctx.beginPath();
+      ctx.moveTo(pad, y);
+      ctx.lineTo(w - pad, y);
+      ctx.stroke();
+    }
+    const xTicks = 5;
+    for (let i = 0; i <= xTicks; i++) {
+      const x = pad + (i / xTicks) * (w - pad * 2);
+      ctx.beginPath();
+      ctx.moveTo(x, h - pad);
+      ctx.lineTo(x, h - pad + 6);
+      ctx.stroke();
+    }
+  }
+
+  function drawLine(color, glow, phase, time) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.shadowColor = glow;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    const steps = 80;
+    for (let i = 0; i <= steps; i++) {
+      const x = pad + (i / steps) * (w - pad * 2);
+      const t = time + i * 0.12;
+      const yN = lineValue(t, phase);
+      const y = h - pad - yN * (h - pad * 2);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function animate(now) {
+    const t = (now - start) / 1000;
+    ctx.fillStyle = "rgba(7, 11, 24, 0.15)";
+    ctx.fillRect(0, 0, w, h);
+
+    drawAxes();
+    drawLine("#2fe27f", "rgba(47,226,127,0.7)", 0.0, t);
+    drawLine("#ff4d4d", "rgba(255,77,77,0.6)", 1.7, t + 0.6);
+
+    loadingAnim = requestAnimationFrame(animate);
+  }
+
+  if (loadingAnim) cancelAnimationFrame(loadingAnim);
+  ctx.clearRect(0, 0, w, h);
+  loadingAnim = requestAnimationFrame(animate);
+}
+
+function stopLoadingChart() {
+  if (loadingAnim) {
+    cancelAnimationFrame(loadingAnim);
+    loadingAnim = null;
+  }
 }
 
 function getHostPose(index) {
@@ -1677,7 +1827,7 @@ screens.welcome.addEventListener("click", () => {
       welcome.style.display = "";
       blackout.classList.remove("show");
     }, 200);
-  }, 3000);
+  }, 2000);
 }, { once: true });
 
 screens.method.addEventListener("click", () => {
