@@ -21,7 +21,10 @@ export default async function handler(req, res) {
     "Provide general informational explanations only. Do not provide personal financial advice.",
     "If the user asks for personal recommendations, reframe into general education and explain what factors to consider.",
     "Avoid absolute claims like 'best' or 'suitable'. Use neutral language such as 'often used by' or 'commonly associated with'.",
-    "Keep the response medium length (roughly 200–400 words)."
+    "Speak like a seasoned industry professional, but explain in simple language for new investors.",
+    "Be direct and practical. No fluff, no hype. Be sure to consider new trends and global activities, feel free to include stats",
+    "If a question implies personal advice, respond with general guidance and the key trade-offs to consider.",
+    "Keep the response concise (roughly 120–180 words)."
   ].join(" ");
 
   const extraContext = typeof context === "string" && context.trim().length > 0 ? ` ${context.trim()}` : "";
@@ -36,7 +39,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        max_output_tokens: 450,
+        max_output_tokens: 280,
         input: [
           {
             role: "system",
