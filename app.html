@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>OSCAR: Platform Quiz</title>
+<meta name="description" content="Find your investing platform in minutes. OSCAR compares 20+ Australian platforms using your preferences: fees, ownership, style and more." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+
+<style>
+:root {
+  --bg: #08090d;
+  --bg2: #0d0f17;
+  --bg3: #111420;
+  --panel: rgba(13,15,23,0.88);
+  --text: #f0f2f8;
+  --muted: rgba(240,242,248,0.56);
+  --dim: rgba(240,242,248,0.3);
+  --green: #00ff87;
+  --green-mid: #00c866;
+  --green-glow: rgba(0,255,135,0.2);
+  --blue: #4d9fff;
+  --violet: #a259ff;
+  --amber: #ffc642;
+  --red: #ff4d6a;
+  --line: rgba(255,255,255,0.07);
+  --line2: rgba(255,255,255,0.12);
+  --radius: 20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+/* ─── BACKGROUND ─────────────────────────────────── */
+.bg-base {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 1000px 600px at 15% 10%, rgba(0,200,102,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 900px 700px at 88% 90%, rgba(77,159,255,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 600px 500px at 50% 50%, rgba(162,89,255,0.04) 0%, transparent 60%);
+}
+
+.scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent, transparent 2px,
+    rgba(255,255,255,0.011) 2px,
+    rgba(255,255,255,0.011) 4px
+  );
+}
+
+.stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: white;
+  animation: starPulse var(--dur, 4s) ease-in-out infinite var(--delay, 0s);
+}
+
+@keyframes starPulse {
+  0%, 100% { opacity: var(--min-o, 0.1); }
+  50% { opacity: var(--max-o, 0.6); }
+}
+
+/* ─── BLACKOUT ───────────────────────────────────── */
+.blackout {
+  position: fixed;
+  inset: 0;
+  background: #08090d;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 999;
+}
+
+.blackout.show { opacity: 1; pointer-events: all; }
+
+/* ─── SCREENS ────────────────────────────────────── */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  z-index: 1;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── MINI NAV ───────────────────────────────────── */
+.mini-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: rgba(8,9,13,0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+
+.mini-brand {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--text);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-gem-mini {
+  width: 22px;
+  height: 22px;
+}
+
+.mini-back {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.mini-back:hover { color: var(--text); }
+
+/* ─── HOST CHARACTER ─────────────────────────────── */
+.host-wrap {
+  position: absolute;
+  pointer-events: none;
+  width: min(28vw, 280px);
+  z-index: 2;
+}
+
+.host {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5));
+  mix-blend-mode: lighten;
+  transition: all 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+.host-left {
+  left: 2vw;
+  bottom: 0;
+}
+
+.host-right {
+  right: 2vw;
+  bottom: 0;
+}
+
+.host-float {
+  animation: hostFloat 5s ease-in-out infinite;
+}
+
+@keyframes hostFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+/* ─── SPEECH BUBBLE ──────────────────────────────── */
+.bubble {
+  position: absolute;
+  padding: 12px 16px;
+  background: var(--bg3);
+  border: 1px solid var(--line2);
+  border-radius: 14px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+  max-width: 240px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  font-family: 'JetBrains Mono', monospace;
+  z-index: 3;
+}
+
+.bubble-right {
+  left: calc(100% + 14px);
+  top: 30%;
+}
+
+.bubble-left {
+  right: calc(100% + 14px);
+  top: 30%;
+}
+
+.bubble::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--bg3);
+  top: 20px;
+}
+
+.bubble-right::after {
+  left: -5px;
+  border-left: 1px solid var(--line2);
+  border-bottom: 1px solid var(--line2);
+  transform: rotate(45deg);
+}
+
+.bubble-left::after {
+  right: -5px;
+  border-right: 1px solid var(--line2);
+  border-top: 1px solid var(--line2);
+  transform: rotate(45deg);
+}
+
+/* ─── WELCOME SCREEN ─────────────────────────────── */
+#welcome {
+  cursor: pointer;
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  z-index: 2;
+  padding: 0 24px;
+  max-width: 640px;
+}
+
+.welcome-gem {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+  animation: gemSpin 12s linear infinite;
+}
+
+@keyframes gemSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.welcome-logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(3.5rem, 9vw, 7rem);
+  letter-spacing: 0.06em;
+  line-height: 1;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff 0%, var(--green) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.welcome-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.welcome-tagline {
+  font-size: 1.1rem;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 440px;
+  margin-bottom: 40px;
+}
+
+.welcome-cta-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: 100px;
+  border: 1px solid var(--line2);
+  background: rgba(255,255,255,0.03);
+  color: var(--muted);
+  font-size: 0.88rem;
+  animation: pulseHint 3s ease infinite;
+}
+
+@keyframes pulseHint {
+  0%, 100% { border-color: var(--line2); box-shadow: none; }
+  50% { border-color: rgba(0,255,135,0.3); box-shadow: 0 0 20px rgba(0,255,135,0.08); }
+}
+
+.hint-arrow {
+  color: var(--green);
+  animation: bounce 2s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+.welcome-disclaimer {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 680px;
+  font-size: 0.72rem;
+  color: var(--dim);
+  text-align: center;
+  line-height: 1.5;
+  padding: 0 24px;
+}
+
+/* Welcome zoom transition */
+.welcome-zoom { transition: transform 2.4s ease, opacity 2.4s ease; }
+.welcome-zoom-active { transform: scale(12); opacity: 0; }
+
+/* ─── METHOD SCREEN ──────────────────────────────── */
+.method-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.method-header {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  max-width: 640px;
+  width: 90%;
+}
+
+.method-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+.method-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--green);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+.method-bubble-wrap {
+  position: absolute;
+  top: 180px;
+  right: 6vw;
+  max-width: 360px;
+}
+
+.method-steps {
+  position: absolute;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  width: 90%;
+  max-width: 900px;
+}
+
+.method-step {
+  flex: 1;
+  padding: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 1s ease, transform 1s ease;
+}
+
+.method-step.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.method-step-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--green);
+  letter-spacing: 0.1em;
+  margin-bottom: 10px;
+}
+
+.method-step-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.method-step-desc {
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.method-continue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.78rem;
+  color: var(--dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.method-continue.show { opacity: 1; }
+
+.method-fade {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.method-fade.show { opacity: 1; }
+
+/* ─── QUIZ SCREEN ────────────────────────────────── */
+.quiz-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(580px, 92vw);
+  z-index: 2;
+  padding-top: 60px;
+}
+
+.quiz-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: var(--line);
+  border-radius: 3px;
+  margin-bottom: 28px;
+  overflow: hidden;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green-mid), var(--green));
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 0 12px var(--green-glow);
+}
+
+.quiz-step-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  align-self: flex-start;
+}
+
+.quiz-question {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.2rem, 3vw, 1.65rem);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  text-align: left;
+  width: 100%;
+  margin-bottom: 28px;
+}
+
+.quiz-answers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.quiz-answer {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line2);
+  border-radius: 14px;
+  color: var(--text);
+  font-size: 0.97rem;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.quiz-answer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,255,135,0.06), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.quiz-answer:hover {
+  border-color: rgba(0,255,135,0.35);
+  background: rgba(0,255,135,0.05);
+  transform: translateX(4px);
+}
+
+.quiz-answer:hover::before { opacity: 1; }
+
+.quiz-answer:active { transform: scale(0.98) translateX(4px); }
+
+.answer-letter {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--line);
+  border: 1px solid var(--line2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--dim);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.quiz-answer:hover .answer-letter {
+  background: rgba(0,255,135,0.15);
+  border-color: rgba(0,255,135,0.4);
+  color: var(--green);
+}
+
+.quiz-selected {
+  border-color: var(--green) !important;
+  background: rgba(0,255,135,0.08) !important;
+  transform: translateX(4px);
+}
+
+.quiz-selected .answer-letter {
+  background: rgba(0,255,135,0.2) !important;
+  border-color: var(--green) !important;
+  color: var(--green) !important;
+}
+
+/* ─── LOADING SCREEN ─────────────────────────────── */
+.loading-card {
+  background: var(--panel);
+  border: 1px solid var(--line2);
+  border-radius: 22px;
+  padding: 28px;
+  width: min(820px, 92vw);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+
+#loadingChart {
+  border-radius: 14px;
+  display: block;
+  width: 100%;
+  background: rgba(7,11,24,0.8);
+}
+
+.loading-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+}
+
+.loading-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: opacity 0.5s;
+}
+
+.loading-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(0,255,135,0.2);
+  border-top-color: var(--green);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── RESULT SCREENS ─────────────────────────────── */
+.result-card {
+  background: var(--panel);
+  border: 1px solid var(--line2);
+  border-radius: 24px;
+  padding: 32px 36px;
+  width: min(680px, 92vw);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  position: relative;
+  overflow: hidden;
+  z-index: 2;
+}
+
+.result-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+}
+
+.result-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.result-platform {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #fff 0%, var(--green) 80%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.result-reason {
+  font-size: 0.95rem;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+
+.result-next {
+  font-size: 0.88rem;
+  color: var(--dim);
+  line-height: 1.6;
+  margin-bottom: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.result-warning {
+  display: none;
+  font-size: 0.82rem;
+  color: var(--amber);
+  padding: 8px 12px;
+  background: rgba(255,198,66,0.07);
+  border: 1px solid rgba(255,198,66,0.18);
+  border-radius: 10px;
+  margin-top: 8px;
+  margin-bottom: 4px;
+}
+
+.result-warning.visible { display: block; }
+
+.result-prompt {
+  font-size: 0.88rem;
+  color: var(--dim);
+  margin: 16px 0 10px;
+}
+
+.result-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.result-disclaimer {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  font-size: 0.68rem;
+  color: var(--dim);
+  max-width: 380px;
+  text-align: right;
+  line-height: 1.45;
+}
+
+/* ─── BUTTONS ────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  border: 1px solid;
+  transition: all 0.2s ease;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+
+.btn-green {
+  background: var(--green);
+  color: #04120a;
+  border-color: var(--green);
+}
+
+.btn-green:hover {
+  background: #33ffaa;
+  box-shadow: 0 10px 28px rgba(0,255,135,0.3);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--text);
+  border-color: var(--line2);
+}
+
+.btn-outline:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.22);
+}
+
+.btn-violet {
+  background: rgba(162,89,255,0.12);
+  color: var(--violet);
+  border-color: rgba(162,89,255,0.28);
+}
+
+.btn-violet:hover {
+  background: rgba(162,89,255,0.22);
+  box-shadow: 0 10px 28px rgba(162,89,255,0.2);
+  transform: translateY(-1px);
+}
+
+/* ─── CALCULATOR SCREEN ──────────────────────────── */
+.calc-screen-content {
+  width: min(940px, 92vw);
+  z-index: 2;
+  padding-top: 70px;
+}
+
+.screen-title {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.4rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.screen-title span {
+  color: var(--green);
+}
+
+.calc-shell {
+  background: var(--panel);
+  border: 1px solid var(--line2);
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.calc-body {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 0;
+}
+
+.calc-inputs {
+  padding: 24px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.calc-visuals {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.field-group label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.field-group input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-family: 'JetBrains Mono', monospace;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.field-group input:focus {
+  outline: none;
+  border-color: rgba(0,255,135,0.4);
+  box-shadow: 0 0 0 3px rgba(0,255,135,0.06);
+}
+
+.calc-canvas {
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(7,9,20,0.8);
+  width: 100%;
+  height: 220px;
+  display: block;
+}
+
+.calc-legend {
+  display: flex;
+  gap: 20px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.legend-swatch {
+  width: 20px;
+  height: 2px;
+  border-radius: 2px;
+}
+
+.calc-output {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.calc-row-label {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.calc-row-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.calc-row-value.green { color: var(--green); }
+.calc-row-value.red { color: var(--red); }
+
+.calc-disclaimer {
+  font-size: 0.72rem;
+  color: var(--dim);
+  line-height: 1.5;
+}
+
+.calc-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .calc-body { grid-template-columns: 1fr; }
+  .calc-inputs { border-right: none; border-bottom: 1px solid var(--line); }
+}
+
+/* ─── EXPLAINS SCREEN ────────────────────────────── */
+.explains-content {
+  width: min(780px, 92vw);
+  z-index: 2;
+  padding-top: 70px;
+}
+
+.explains-shell {
+  background: var(--panel);
+  border: 1px solid var(--line2);
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+.explains-body {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.explains-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-size: 0.92rem;
+  font-family: 'DM Sans', sans-serif;
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 72px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.explains-textarea:focus,
+.explains-input:focus {
+  outline: none;
+  border-color: rgba(162,89,255,0.4);
+  box-shadow: 0 0 0 3px rgba(162,89,255,0.06);
+}
+
+.explains-meta-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr;
+  gap: 12px;
+}
+
+.explains-input {
+  width: 100%;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line2);
+  border-radius: 10px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-size: 0.88rem;
+  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.explains-output {
+  background: rgba(0,0,0,0.35);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 18px;
+  font-size: 0.92rem;
+  line-height: 1.7;
+  min-height: 100px;
+  max-height: 200px;
+  overflow-y: auto;
+  color: var(--muted);
+}
+
+.explains-output.has-response {
+  color: var(--text);
+}
+
+.explains-output.loading {
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+}
+
+.explains-btns {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.explains-footer {
+  padding: 12px 24px;
+  border-top: 1px solid var(--line);
+  font-size: 0.72rem;
+  color: var(--dim);
+  text-align: center;
+}
+
+@media (max-width: 580px) {
+  .explains-meta-row { grid-template-columns: 1fr; }
+}
+
+/* ─── SCREEN FOOTER NOTE ─────────────────────────── */
+.screen-footer-note {
+  position: absolute;
+  bottom: 12px;
+  right: 18px;
+  max-width: 440px;
+  font-size: 0.64rem;
+  color: rgba(240,242,248,0.3);
+  text-align: right;
+  line-height: 1.45;
+  z-index: 3;
+}
+
+/* ─── METHOD SCREEN DISCLAIMER ───────────────────── */
+.method-footer-note {
+  position: absolute;
+  bottom: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.64rem;
+  color: rgba(240,242,248,0.3);
+  text-align: center;
+  max-width: 600px;
+  opacity: 0;
+  transition: opacity 1s;
+  padding: 0 24px;
+}
+
+.method-footer-note.show { opacity: 1; }
+
+@media (max-height: 700px) {
+  .method-steps { bottom: 70px; }
+  .method-step { padding: 16px; }
+}
+
+@media (max-width: 768px) {
+  .host-wrap { display: none; }
+  .quiz-content { padding-top: 70px; }
+  .method-steps { flex-direction: column; bottom: 80px; max-height: calc(100vh - 320px); overflow: auto; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="bg-base"></div>
+<div class="scanlines"></div>
+<div class="stars" id="starsEl"></div>
+<div class="blackout" id="blackout"></div>
+
+<!-- MINI NAV (hidden on welcome) -->
+<div class="mini-nav" id="miniNav" style="display:none;">
+  <a class="mini-brand" href="landing.html">
+    <svg class="brand-gem-mini" viewBox="0 0 32 32" fill="none">
+      <polygon points="16,6 26,13 22,26 10,26 6,13" fill="rgba(0,255,135,0.15)" stroke="#00ff87" stroke-width="1.5" stroke-linejoin="round"/>
+    </svg>
+    OSCAR
+  </a>
+  <a class="mini-back" href="landing.html" id="navBack">← Back to home</a>
+</div>
+
+<!-- ═══════════════════ WELCOME ═══════════════════ -->
+<div class="screen active" id="welcome">
+  <div class="host-wrap host-right host-float" style="right:4vw;bottom:0;width:min(24vw,220px);">
+    <div class="bubble bubble-left" id="bubbleWelcome">Ready to turn confusion into compounding?</div>
+    <img class="host" id="hostWelcome" src="host_point.png" alt="OSCAR">
+  </div>
+
+  <div class="welcome-content">
+    <svg class="welcome-gem" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="32,4 58,20 50,56 14,56 6,20" fill="none" stroke="#00ff87" stroke-width="1.5" stroke-linejoin="round" opacity="0.3"/>
+      <polygon points="32,10 52,24 45,52 19,52 12,24" fill="rgba(0,255,135,0.08)" stroke="#00ff87" stroke-width="1" stroke-linejoin="round"/>
+      <polygon points="32,16 46,26 41,48 23,48 18,26" fill="rgba(0,255,135,0.12)" stroke="#00ff87" stroke-width="0.5" stroke-linejoin="round"/>
+      <circle cx="32" cy="32" r="5" fill="#00ff87" opacity="0.8"/>
+      <circle cx="32" cy="32" r="10" fill="none" stroke="#00ff87" stroke-width="0.5" opacity="0.3"/>
+    </svg>
+    <div class="welcome-logo">OSCAR</div>
+    <div class="welcome-sub">Optimised Selection & Comparison Algorithmic Resource</div>
+    <p class="welcome-tagline">Too many investing apps. Not enough clarity.<br>Take a quick quiz. Get a clearer path in.</p>
+    <div class="welcome-cta-hint">
+      <span>Click anywhere to begin</span>
+      <span class="hint-arrow">↓</span>
+    </div>
+  </div>
+
+  <div class="welcome-disclaimer">
+    <strong>Important:</strong> OSCAR is an independent educational tool providing general information only. It does not constitute financial advice and does not consider your personal situation. Before investing, consider seeking advice from a licensed financial adviser.
+  </div>
+</div>
+
+<!-- ═══════════════════ METHOD ═══════════════════ -->
+<div class="screen" id="method">
+  <div class="method-content">
+    <div class="host-wrap host-right method-fade" id="hostMethodWrap" style="right:5vw;bottom:0;width:min(22vw,200px);">
+      <img class="host host-float" src="ChatGPT_Image_Feb_15__2026__04_41_40_PM.png" alt="OSCAR">
+    </div>
+
+    <div class="method-header">
+      <div class="method-label method-fade" id="mLabel">Meet OSCAR</div>
+      <h1 class="method-title method-fade" id="mTitle">How it works</h1>
+      <p class="method-fade" id="mSubtitle" style="color:var(--muted);font-size:0.95rem;margin-top:10px;">
+        No financial details required. Just your preferences.
+      </p>
+    </div>
+
+    <div class="bubble method-fade" id="bubbleMethod" style="position:absolute;top:calc(12vh + 80px);right:calc(5vw + min(22vw,200px) + 16px);max-width:300px;">
+      OSCAR compares platforms using your preferences. Short quiz, clear result, no noise.
+    </div>
+
+    <div class="method-steps" id="methodSteps">
+      <div class="method-step" id="ms1">
+        <div class="method-step-num">STEP 01</div>
+        <div class="method-step-title">Capture your preferences</div>
+        <p class="method-step-desc">Eight short questions on fees, ownership, market access and investing style. No personal financials asked.</p>
+      </div>
+      <div class="method-step" id="ms2">
+        <div class="method-step-num">STEP 02</div>
+        <div class="method-step-title">Match platform traits</div>
+        <p class="method-step-desc">A weighted matrix compares fee structure, CHESS status, market access, and complexity across 22+ platforms.</p>
+      </div>
+      <div class="method-step" id="ms3">
+        <div class="method-step-num">STEP 03</div>
+        <div class="method-step-title">See results clearly</div>
+        <p class="method-step-desc">Results include the platform suggestion and the reasoning behind it. Not advice, just a clearer starting point.</p>
+      </div>
+    </div>
+
+    <div class="method-continue method-fade" id="methodContinue">Click anywhere to start the quiz</div>
+    <div class="method-footer-note method-fade" id="methodFooter">
+      All platform names and trademarks are property of their respective owners. Used strictly for comparison purposes only.
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ QUIZ ═══════════════════ -->
+<div class="screen" id="quiz">
+  <div class="host-wrap" id="hostQuizWrap" style="bottom:0;">
+    <div class="bubble" id="bubbleQuiz" style="display:none;"></div>
+    <img class="host host-float" id="hostQuiz" src="host_point.png" alt="OSCAR">
+  </div>
+
+  <div class="quiz-content">
+    <div class="quiz-progress-bar">
+      <div class="quiz-progress-fill" id="quizProgressFill" style="width:0%"></div>
+    </div>
+    <div class="quiz-step-label" id="quizStepLabel">Question 1 of 8</div>
+    <h2 class="quiz-question" id="quizQuestion"></h2>
+    <div class="quiz-answers" id="quizAnswers"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════ LOADING ═══════════════════ -->
+<div class="screen" id="loading">
+  <div class="loading-card">
+    <canvas id="loadingChart" height="240"></canvas>
+    <div class="loading-status">
+      <div class="loading-text" id="loadingText">
+        <div class="loading-spinner"></div>
+        <span id="loadingMsg">Crunching numbers</span><span id="loadingDots"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ RESULT ═══════════════════ -->
+<div class="screen" id="result">
+  <div class="host-wrap host-left" style="left:3vw;bottom:0;width:min(22vw,200px);" id="hostResultWrap">
+    <img class="host host-float" src="pose4_tada_right.png" alt="OSCAR">
+  </div>
+
+  <div class="result-card">
+    <div class="result-label" id="resultTitle">Based on your selected inputs</div>
+    <div class="result-platform" id="resultPlatform"></div>
+    <p class="result-reason" id="resultReason"></p>
+    <p class="result-next" id="resultNext"></p>
+    <div class="result-warning" id="resultWarning"></div>
+    <p class="result-prompt">Not quite what you expected? Dig deeper. Answer 5 more questions, check the fee impact, or ask OSCAR directly.</p>
+    <div class="result-btns">
+      <button class="btn btn-outline" id="btnMoreQs">5 more questions</button>
+      <button class="btn btn-outline" id="btnCalculator">Fee calculator</button>
+      <button class="btn btn-violet" id="btnExplains">Ask OSCAR ✦</button>
+    </div>
+    <div class="result-btns" style="margin-top:8px;">
+      <button class="btn btn-green" id="btnViewAnalysis" onclick="">View full analysis →</button>
+      <button class="btn btn-outline" id="btnShareResult" style="font-size:0.8rem;padding:8px 14px;">Copy share link</button>
+    </div>
+  </div>
+
+  <div class="screen-footer-note">
+    <strong>General Information Only.</strong> Results are based on user-selected preferences only. Not personal financial advice.
+  </div>
+</div>
+
+<!-- ═══════════════════ RESULT 2 ═══════════════════ -->
+<div class="screen" id="result2">
+  <div class="host-wrap host-left" style="left:3vw;bottom:0;width:min(22vw,200px);">
+    <img class="host host-float" src="pose4_tada_right.png" alt="OSCAR">
+  </div>
+
+  <div class="result-card">
+    <div class="result-label" id="result2Title">Based on all 13 inputs</div>
+    <div class="result-platform" id="result2Platform"></div>
+    <p class="result-reason" id="result2Reason"></p>
+    <p class="result-next" id="result2Next"></p>
+    <div class="result-warning" id="result2Warning"></div>
+    <div class="result-btns" style="margin-top:20px;">
+      <button class="btn btn-outline" id="btnRestart2">Start again</button>
+      <button class="btn btn-violet" id="btnExplains2">Ask OSCAR ✦</button>
+    </div>
+    <div class="result-btns" style="margin-top:8px;">
+      <button class="btn btn-green" id="btnViewAnalysis2" onclick="">View full analysis →</button>
+      <button class="btn btn-outline" id="btnShareResult2" style="font-size:0.8rem;padding:8px 14px;">Copy share link</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ CALCULATOR ═══════════════════ -->
+<div class="screen" id="calculator">
+  <div class="calc-screen-content">
+    <h2 class="screen-title">Fee Impact <span>Calculator</span></h2>
+    <div class="calc-shell">
+      <div class="calc-body">
+        <div class="calc-inputs">
+          <div class="field-group">
+            <label>Initial investment (AUD)</label>
+            <input id="c_initial" type="number" value="0" min="0">
+          </div>
+          <div class="field-group">
+            <label>Annual contribution (AUD)</label>
+            <input id="c_annual" type="number" value="0" min="0">
+          </div>
+          <div class="field-group">
+            <label>Investment horizon (years)</label>
+            <input id="c_years" type="number" value="10" min="0">
+          </div>
+          <div class="field-group">
+            <label>Expected annual return (%)</label>
+            <input id="c_return" type="number" value="7" step="0.1">
+          </div>
+          <div class="field-group">
+            <label>Annual platform fee (%)</label>
+            <input id="c_platform_fee" type="number" value="0.2" step="0.01">
+          </div>
+          <div class="field-group">
+            <label>Annual ETF/fund fee (%)</label>
+            <input id="c_etf_fee" type="number" value="0.3" step="0.01">
+          </div>
+          <div class="field-group">
+            <label>Brokerage per trade (AUD)</label>
+            <input id="c_brokerage" type="number" value="0" step="0.01">
+          </div>
+          <div class="field-group">
+            <label>Trades per year</label>
+            <input id="c_trades" type="number" value="0" step="1">
+          </div>
+          <div class="field-group">
+            <label>FX cost (%) - if applicable</label>
+            <input id="c_fx" type="number" value="0" step="0.01">
+          </div>
+          <div class="field-group">
+            <label>Subscription cost (AUD/yr)</label>
+            <input id="c_sub_initial" type="number" value="0" step="1">
+          </div>
+        </div>
+        <div class="calc-visuals">
+          <canvas id="calcChart" class="calc-canvas" width="800" height="220"></canvas>
+          <div class="calc-legend">
+            <div class="legend-item">
+              <div class="legend-swatch" style="background:#00ff87;"></div>With fees
+            </div>
+            <div class="legend-item">
+              <div class="legend-swatch" style="background:rgba(255,255,255,0.6);"></div>Without fees
+            </div>
+          </div>
+          <div class="calc-output" id="calcOutput">
+            <div class="calc-row">
+              <span class="calc-row-label">Future value with fees</span>
+              <span class="calc-row-value green" id="co_with">...</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-row-label">Future value without fees</span>
+              <span class="calc-row-value" id="co_without">...</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-row-label">Total fee cost</span>
+              <span class="calc-row-value red" id="co_cost">...</span>
+            </div>
+            <div class="calc-row">
+              <span class="calc-row-label">Fee drag</span>
+              <span class="calc-row-value" id="co_drag">...</span>
+            </div>
+          </div>
+          <div class="calc-disclaimer">
+            General illustrative purposes only. Not financial advice. Results use simplified constant-return assumptions.
+          </div>
+        </div>
+      </div>
+      <div class="calc-footer">
+        <button class="btn btn-outline" id="btnRestartCalc">← Back to start</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ EXPLAINS ═══════════════════ -->
+<div class="screen" id="explains">
+  <div class="host-wrap host-right" style="right:4vw;bottom:0;width:min(20vw,180px);">
+    <img class="host host-float" src="host_think.png" alt="OSCAR">
+  </div>
+
+  <div class="explains-content">
+    <h2 class="screen-title">OSCAR <span>Explains</span></h2>
+    <div class="explains-shell">
+      <div class="explains-body">
+        <div>
+          <div class="field-label">Ask any investing question</div>
+          <textarea class="explains-textarea" id="x_general" placeholder="e.g. What is CHESS sponsorship and why does it matter?"></textarea>
+        </div>
+        <div class="explains-meta-row">
+          <div>
+            <div class="field-label">Asset class (optional)</div>
+            <input class="explains-input" id="x_asset" type="text" placeholder="e.g. Gold, Technology">
+          </div>
+          <div>
+            <div class="field-label">Timeframe (optional)</div>
+            <input class="explains-input" id="x_timeframe" type="text" placeholder="e.g. 2022–26">
+          </div>
+          <div>
+            <div class="field-label">Specific question (optional)</div>
+            <input class="explains-input" id="x_question" type="text" placeholder="e.g. What are the key risks?">
+          </div>
+        </div>
+        <div class="explains-btns">
+          <button class="btn btn-violet" id="btnAskExplain">Ask OSCAR ✦</button>
+          <button class="btn btn-outline" id="btnBackFromExplain">← Back</button>
+        </div>
+        <div class="explains-output" id="explainOutput">
+          Enter a question above to get a concise educational explanation.
+        </div>
+      </div>
+      <div class="explains-footer">
+        General information only. Not financial advice. OSCAR does not assess suitability or provide personal recommendations.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+//  SETUP
+// ═══════════════════════════════════════
+
+const screens = {
+  welcome: document.getElementById('welcome'),
+  method: document.getElementById('method'),
+  quiz: document.getElementById('quiz'),
+  loading: document.getElementById('loading'),
+  result: document.getElementById('result'),
+  result2: document.getElementById('result2'),
+  calculator: document.getElementById('calculator'),
+  explains: document.getElementById('explains')
+};
+
+const miniNav = document.getElementById('miniNav');
+let audioCtx = null;
+let clickAudio = null;
+(function preloadClick() {
+  clickAudio = new Audio('soundreality-sound-of-mouse-click-4-478760.mp3');
+  clickAudio.volume = 0.4;
+  clickAudio.load();
+})();
+let dotsTimer = null;
+let loadingAnim = null;
+let chartState = null;
+let flow = 'base';
+let extraStep = 0;
+let step = 0;
+const state = {};
+const extraState = {};
+let lastPlatform = '';
+
+// Generate stars
+const starsEl = document.getElementById('starsEl');
+for (let i = 0; i < 70; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${3+Math.random()*7}s;--delay:${Math.random()*-10}s;--min-o:${0.05+Math.random()*0.1};--max-o:${0.3+Math.random()*0.5};${Math.random()<0.15?'width:3px;height:3px':''}`;
+  starsEl.appendChild(s);
+}
+
+// ═══════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════
+
+function fadeTo(screen) {
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screen.classList.add('active');
+  const showNav = screen !== screens.welcome && screen !== screens.method;
+  miniNav.style.display = showNav ? 'flex' : 'none';
+}
+
+// ═══════════════════════════════════════
+//  AUDIO
+// ═══════════════════════════════════════
+
+function initAudio() { /* no-op - using HTML5 Audio */ }
+
+function playClick() {
+  if (!clickAudio) return;
+  const s = clickAudio.cloneNode();
+  s.volume = 0.35;
+  s.play().catch(() => {});
+}
+
+// ═══════════════════════════════════════
+//  QUESTIONS DATA
+// ═══════════════════════════════════════
+
+const questions = [
+  { id:'intent', text:'What\'s bringing you to investing?',
+    answers:['Taking my first steps','Chasing higher returns','Building long-term wealth'] },
+  { id:'experience', text:'How would you describe your investing experience?',
+    answers:['Brand new to this','Know the basics','Confident and experienced'] },
+  { id:'market', text:'Where do you expect to invest most of your money?',
+    answers:['Australia only','Mostly overseas markets','A mix of both'] },
+  { id:'fees', text:'How important is keeping fees as low as possible?',
+    answers:['Not a top priority','Important but flexible','Non-negotiable'] },
+  { id:'subscription', text:'Would you pay a subscription for better features or lower costs overall?',
+    answers:['Yes, if the value is clear','No, prefer zero subscription','Depends on the deal'] },
+  { id:'control', text:'How much control do you want over your investments?',
+    answers:['Set and forget suits me','Some control, some automation','Full control over every move'] },
+  { id:'style', text:'How do you prefer to invest?',
+    answers:['Simple diversified ETFs','A mix of ETFs and stocks','Picking my own investments'] },
+  { id:'chess', text:'Do you want your shares registered in your name via CHESS?',
+    answers:['Yes, in my name directly','No  -  the app can hold them','I\'m not sure what this means'] }
+];
+
+const extraQuestions = [
+  { id:'ui_load', text:'What platform experience feels right for you?',
+    answers:['Ultra simple and minimal','Clean but data-rich','Advanced with deep tools'] },
+  { id:'research_pref', text:'How do you prefer to make investment decisions?',
+    answers:['Quick and low-research','Some research before buying','Data-driven, deep analysis'] },
+  { id:'device_pref', text:'Where will you use the platform most?',
+    answers:['Mostly on mobile','Equal mobile and desktop','Mostly desktop'] },
+  { id:'visibility_pref', text:'How much portfolio detail do you want to see?',
+    answers:['Just the basics','Balanced overview and metrics','Full analytics and breakdowns'] },
+  { id:'guidance_pref', text:'How much built-in education do you want?',
+    answers:['Very little  -  I\'ll figure it out','Helpful but not in my face','Strong guidance and learning tools'] }
+];
+
+const tips = [
+  'First step: choose the journey, not the jackpot.',
+  'Confidence beats confusion. Slow and steady counts.',
+  'FX fees: the sneaky tax on international capital.',
+  'Low fees compound quietly. They add up fast.',
+  'Subscriptions: worth it when the value is clear.',
+  'Control level set. Autopilot or manual?',
+  'ETFs: the buffet. Stock picks: the chef\'s table.',
+  'CHESS means your shares are registered in your name on the ASX.'
+];
+
+const hostPoses = [
+  'host_coin.png','pose1_thinker.png','host_think.png',
+  'pose2_money_lean.png','host_think.png','host_confident.png',
+  'host_coin.png','host_think.png'
+];
+
+const extraHostPoses = [
+  'pose1_thinker.png','host_think.png','pose2_money_lean.png',
+  'host_confident.png','host_coin.png'
+];
+
+// ═══════════════════════════════════════
+//  QUIZ RENDERING
+// ═══════════════════════════════════════
+
+const LETTERS = ['A','B','C','D'];
+
+function renderQuestion() {
+  const list = flow === 'extra' ? extraQuestions : questions;
+  const idx = flow === 'extra' ? extraStep : step;
+  const q = list[idx];
+  const total = list.length;
+
+  document.getElementById('quizStepLabel').textContent = `Question ${idx+1} of ${total}`;
+  document.getElementById('quizQuestion').textContent = q.text;
+  document.getElementById('quizProgressFill').style.width = `${((idx)/total)*100}%`;
+
+  // Host
+  const hostEl = document.getElementById('hostQuiz');
+  const hostWrap = document.getElementById('hostQuizWrap');
+  const bubbleEl = document.getElementById('bubbleQuiz');
+  const poses = flow === 'extra' ? extraHostPoses : hostPoses;
+  hostEl.src = poses[idx] || poses[0];
+
+  const side = idx % 2 === 0 ? 'right' : 'left';
+  hostWrap.style.removeProperty('left');
+  hostWrap.style.removeProperty('right');
+  if (side === 'right') {
+    hostWrap.style.right = '3vw';
+    if (idx < tips.length) {
+      bubbleEl.style.display = 'block';
+      bubbleEl.textContent = tips[idx];
+      bubbleEl.className = 'bubble bubble-left';
+    } else {
+      bubbleEl.style.display = 'none';
+    }
+  } else {
+    hostWrap.style.left = '3vw';
+    bubbleEl.style.display = 'none';
+  }
+
+  // Answers
+  const answersDiv = document.getElementById('quizAnswers');
+  answersDiv.innerHTML = '';
+  q.answers.forEach((a, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-answer';
+    btn.innerHTML = `<span class="answer-letter">${LETTERS[i]}</span><span>${a}</span>`;
+    btn.onclick = () => {
+      initAudio();
+      playClick();
+      btn.classList.add('quiz-selected');
+      setTimeout(() => {
+        if (flow === 'extra') {
+          extraState[q.id] = a;
+          extraStep++;
+          if (extraStep < extraQuestions.length) {
+            document.getElementById('quizProgressFill').style.width = `${(extraStep/extraQuestions.length)*100}%`;
+            fadeQuizOut(renderQuestion);
+          } else {
+            document.getElementById('quizProgressFill').style.width = '100%';
+            fadeQuizOut(showResult2);
+          }
+        } else {
+          state[q.id] = a;
+          step++;
+          if (step < questions.length) {
+            document.getElementById('quizProgressFill').style.width = `${(step/questions.length)*100}%`;
+            fadeQuizOut(renderQuestion);
+          } else {
+            document.getElementById('quizProgressFill').style.width = '100%';
+            fadeQuizOut(showLoading);
+          }
+        }
+      }, 220);
+    };
+    answersDiv.appendChild(btn);
+  });
+}
+
+function fadeQuizOut(cb) {
+  screens.quiz.style.opacity = '0';
+  setTimeout(() => {
+    screens.quiz.style.opacity = '';
+    cb();
+  }, 380);
+}
+
+// ═══════════════════════════════════════
+//  LOADING / RESULTS
+// ═══════════════════════════════════════
+
+function showLoading() {
+  fadeTo(screens.loading);
+  startLoadingChart();
+  startDots();
+
+  const msgEl = document.getElementById('loadingMsg');
+  msgEl.textContent = 'Crunching numbers';
+  setTimeout(() => {
+    msgEl.style.opacity = '0';
+    setTimeout(() => {
+      msgEl.textContent = 'Scoring all 22 platforms';
+      msgEl.style.opacity = '1';
+    }, 400);
+  }, 4500);
+
+  setTimeout(() => {
+    stopDots(); stopLoadingChart();
+    fadeTo(screens.result);
+    const r = decidePlatform(state);
+    lastPlatform = r.platform;
+    document.getElementById('resultPlatform').textContent = r.platform;
+    document.getElementById('resultReason').textContent = r.reason;
+    document.getElementById('resultNext').textContent = r.next || '';
+    const warn = document.getElementById('resultWarning');
+    if (r.warning) { warn.textContent = r.warning; warn.classList.add('visible'); }
+    else warn.classList.remove('visible');
+    // Wire analysis link
+    const analysisBtn = document.getElementById('btnViewAnalysis');
+    if (analysisBtn) analysisBtn.onclick = () => { window.location.href = 'platform.html?p=' + encodeURIComponent(r.platform); };
+  }, 8000);
+}
+
+function showResult2() {
+  fadeTo(screens.result2);
+  const r = decidePlatformExtended(state, extraState);
+  lastPlatform = r.platform;
+  document.getElementById('result2Platform').textContent = r.platform;
+  document.getElementById('result2Reason').textContent = r.reason;
+  document.getElementById('result2Next').textContent = r.next || '';
+  const warn = document.getElementById('result2Warning');
+  if (r.warning) { warn.textContent = r.warning; warn.classList.add('visible'); }
+  else warn.classList.remove('visible');
+  const analysisBtn2 = document.getElementById('btnViewAnalysis2');
+  if (analysisBtn2) analysisBtn2.onclick = () => { window.location.href = 'platform.html?p=' + encodeURIComponent(r.platform); };
+}
+
+function startDots() {
+  stopDots();
+  const frames = ['','.','..',  '...'];
+  let i = 0;
+  dotsTimer = setInterval(() => {
+    document.getElementById('loadingDots').textContent = frames[i++ % frames.length];
+  }, 480);
+}
+
+function stopDots() {
+  if (dotsTimer) { clearInterval(dotsTimer); dotsTimer = null; }
+  const d = document.getElementById('loadingDots');
+  if (d) d.textContent = '';
+}
+
+// ═══════════════════════════════════════
+//  LOADING CHART
+// ═══════════════════════════════════════
+
+function startLoadingChart() {
+  const canvas = document.getElementById('loadingChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth || 760;
+  const w = canvas.width, h = canvas.height, pad = 32;
+  const t0 = performance.now();
+
+  function line(t, ph) {
+    return 0.5+0.18*Math.sin(t*0.8+ph)+0.11*Math.sin(t*1.8+ph*1.3)+0.05*Math.sin(t*3.2+ph*0.7);
+  }
+
+  function draw(now) {
+    const t = (now - t0) / 1000;
+    ctx.fillStyle = 'rgba(8,9,20,0.12)';
+    ctx.fillRect(0,0,w,h);
+
+    // Grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    for (let i=1; i<=4; i++) {
+      const y = pad + (i/4)*(h-pad*2);
+      ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke();
+    }
+
+    // Axes
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.beginPath();
+    ctx.moveTo(pad,h-pad); ctx.lineTo(w-pad,h-pad); ctx.lineTo(w-pad,pad);
+    ctx.stroke();
+
+    // Lines
+    [[0.0,'#00ff87','rgba(0,255,135,0.6)'],[1.8,'#4d9fff','rgba(77,159,255,0.4)']].forEach(([ph,col,glow]) => {
+      ctx.save();
+      ctx.strokeStyle = col; ctx.lineWidth = 2.5;
+      ctx.shadowColor = glow; ctx.shadowBlur = 10;
+      ctx.beginPath();
+      for (let i=0; i<=80; i++) {
+        const x = pad + (i/80)*(w-pad*2);
+        const y = h-pad - line(t+i*0.11, ph)*(h-pad*2);
+        i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.stroke(); ctx.restore();
+    });
+
+    // Labels
+    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.fillText('Price', 8, pad+4);
+    ctx.fillText('Time →', w-pad-42, h-pad+18);
+
+    loadingAnim = requestAnimationFrame(draw);
+  }
+
+  if (loadingAnim) cancelAnimationFrame(loadingAnim);
+  loadingAnim = requestAnimationFrame(draw);
+}
+
+function stopLoadingChart() {
+  if (loadingAnim) { cancelAnimationFrame(loadingAnim); loadingAnim = null; }
+}
+
+// ═══════════════════════════════════════
+//  PLATFORMS
+// ═══════════════════════════════════════
+
+const platforms = [
+  { name:'CMC Markets Invest', chess:true, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:1, cost:1, subscription:false, simplicity:2, info_rich:1, advanced_tools:1, mobile_first:1, desktop_power:1, analytics_depth:1, education_guidance:1 },
+  { name:'Stake', chess:true, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:1, cost:2, subscription:false, simplicity:2, info_rich:1, advanced_tools:1, mobile_first:2, desktop_power:1, analytics_depth:1, education_guidance:1 },
+  { name:'Interactive Brokers Australia', chess:true, intl:true, fxLow:true, robo:false, micro:false, etf:true, trading:true, complexity:3, cost:1, subscription:false, simplicity:0, info_rich:1, advanced_tools:2, mobile_first:1, desktop_power:2, analytics_depth:2, education_guidance:0 },
+  { name:'Saxo Invested', chess:false, intl:true, fxLow:true, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:2, subscription:false, simplicity:1, info_rich:2, advanced_tools:2, mobile_first:1, desktop_power:2, analytics_depth:2, education_guidance:0 },
+  { name:'Webull', chess:false, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:2, subscription:false, simplicity:1, info_rich:2, advanced_tools:2, mobile_first:2, desktop_power:1, analytics_depth:2, education_guidance:0 },
+  { name:'Moomoo', chess:false, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:2, subscription:false, simplicity:1, info_rich:2, advanced_tools:2, mobile_first:2, desktop_power:1, analytics_depth:2, education_guidance:0 },
+  { name:'Superhero', chess:true, intl:false, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:1, cost:1, subscription:false, simplicity:2, info_rich:1, advanced_tools:0, mobile_first:2, desktop_power:0, analytics_depth:1, education_guidance:1 },
+  { name:'Easy Equities', chess:true, intl:false, fxLow:false, robo:false, micro:false, etf:true, trading:false, complexity:1, cost:1, subscription:false, simplicity:2, info_rich:0, advanced_tools:0, mobile_first:2, desktop_power:0, analytics_depth:0, education_guidance:1 },
+  { name:'Pearler', chess:true, intl:false, fxLow:false, robo:true, micro:false, etf:true, trading:false, complexity:1, cost:2, subscription:true, simplicity:2, info_rich:1, advanced_tools:0, mobile_first:1, desktop_power:1, analytics_depth:1, education_guidance:2 },
+  { name:'SelfWealth', chess:true, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:2, subscription:true, simplicity:1, info_rich:2, advanced_tools:1, mobile_first:1, desktop_power:2, analytics_depth:2, education_guidance:1 },
+  { name:'CommSec', chess:true, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:3, subscription:false, simplicity:1, info_rich:2, advanced_tools:1, mobile_first:1, desktop_power:2, analytics_depth:2, education_guidance:1 },
+  { name:'NABtrade', chess:true, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:3, subscription:false, simplicity:1, info_rich:2, advanced_tools:1, mobile_first:1, desktop_power:2, analytics_depth:2, education_guidance:1 },
+  { name:'Bell Direct', chess:true, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:3, subscription:false, simplicity:1, info_rich:2, advanced_tools:1, mobile_first:1, desktop_power:2, analytics_depth:2, education_guidance:1 },
+  { name:'IG Share Trading', chess:true, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:3, subscription:false, simplicity:1, info_rich:2, advanced_tools:1, mobile_first:1, desktop_power:2, analytics_depth:2, education_guidance:0 },
+  { name:'eToro', chess:false, intl:true, fxLow:false, robo:false, micro:false, etf:false, trading:true, complexity:2, cost:3, subscription:false, simplicity:1, info_rich:1, advanced_tools:1, mobile_first:2, desktop_power:1, analytics_depth:1, education_guidance:0 },
+  { name:'Tiger Brokers', chess:false, intl:true, fxLow:false, robo:false, micro:false, etf:true, trading:true, complexity:2, cost:2, subscription:false, simplicity:1, info_rich:2, advanced_tools:2, mobile_first:2, desktop_power:1, analytics_depth:2, education_guidance:0 },
+  { name:'Syfe', chess:false, intl:true, fxLow:false, robo:true, micro:false, etf:true, trading:false, complexity:1, cost:2, subscription:true, simplicity:2, info_rich:0, advanced_tools:0, mobile_first:2, desktop_power:0, analytics_depth:0, education_guidance:2 },
+  { name:'Stockspot', chess:false, intl:true, fxLow:false, robo:true, micro:false, etf:true, trading:false, complexity:1, cost:2, subscription:true, simplicity:2, info_rich:0, advanced_tools:0, mobile_first:1, desktop_power:1, analytics_depth:0, education_guidance:2 },
+  { name:'Raiz', chess:false, intl:false, fxLow:false, robo:true, micro:true, etf:true, trading:false, complexity:1, cost:2, subscription:true, simplicity:2, info_rich:0, advanced_tools:0, mobile_first:2, desktop_power:0, analytics_depth:0, education_guidance:2 },
+  { name:'CommSec Pocket', chess:false, intl:false, fxLow:false, robo:false, micro:true, etf:true, trading:false, complexity:1, cost:2, subscription:false, simplicity:2, info_rich:0, advanced_tools:0, mobile_first:2, desktop_power:0, analytics_depth:0, education_guidance:1 },
+  { name:'Betashares Direct', chess:false, intl:false, fxLow:false, robo:false, micro:false, etf:true, trading:false, complexity:1, cost:1, subscription:false, simplicity:2, info_rich:0, advanced_tools:0, mobile_first:1, desktop_power:1, analytics_depth:0, education_guidance:1 },
+  { name:'Sharesies', chess:false, intl:true, fxLow:false, robo:false, micro:true, etf:true, trading:true, complexity:1, cost:2, subscription:false, simplicity:2, info_rich:1, advanced_tools:1, mobile_first:2, desktop_power:0, analytics_depth:1, education_guidance:1 }
+];
+
+const blurbs = {
+  'CMC Markets Invest': { reason:'Commonly associated with low brokerage and CHESS registration, a straightforward option for many new investors focused on Australian shares and ETFs.', next:'Next step: consider a starter ETF, check any minimums, and set a regular contribution cadence if that fits your goals.' },
+  'Stake': { reason:'Often used by investors who want CHESS sponsorship with a clean interface and access to both Australian and US markets.', next:'Next step: review FX fees for international trades and test with a small amount first.' },
+  'Interactive Brokers Australia': { reason:'Commonly associated with tight FX pricing and broad international market access, well-suited to cost-aware global investors.', next:'Next step: enable market permissions, review FX settings, and test with a small trade.' },
+  'Saxo Invested': { reason:'Often used by investors who want global access with a polished interface, at higher costs than some competitors.', next:'Next step: verify product access and check FX costs before scaling up.' },
+  'Webull': { reason:'Often used by investors seeking app-first tools and low headline brokerage for active or semi-active trading.', next:'Next step: review custody terms and FX fees for overseas trades.' },
+  'Moomoo': { reason:'Commonly associated with low brokerage and feature-rich tools for self-directed investors who want data depth.', next:'Next step: confirm market access and start with a small position.' },
+  'Superhero': { reason:'Often used by investors looking for lower-cost ASX access with a simple, mobile-first interface and CHESS sponsorship.', next:'Next step: verify CHESS options and consider a diversified ETF to start.' },
+  'Easy Equities': { reason:'Often used by investors seeking a simple, lower-cost ETF experience with CHESS-backed ownership.', next:'Next step: consider a diversified ETF and automate small contributions.' },
+  'Pearler': { reason:'Often used by long-term investors who want habit-building tools, automation, and CHESS ownership in one place.', next:'Next step: set up a portfolio plan and recurring buys.' },
+  'SelfWealth': { reason:'Commonly associated with flat-fee trading, which can be cost-effective for investors who trade at a reasonable frequency.', next:'Next step: check fee thresholds and whether the subscription value matches your trading pace.' },
+  'CommSec': { reason:'Often used by investors who want a full-service brokerage experience and broad market access backed by a major bank.', next:'Next step: compare brokerage costs against alternatives and confirm international trading settings.' },
+  'NABtrade': { reason:'Commonly associated with bank-backed access and CHESS ownership at standard brokerage pricing.', next:'Next step: review brokerage costs and set up trade permissions.' },
+  'Bell Direct': { reason:'Often used by investors seeking research tools alongside a full-service brokerage experience.', next:'Next step: compare brokerage tiers and confirm product access.' },
+  'IG Share Trading': { reason:'Often used by investors seeking feature-rich tools and broad market access.', next:'Next step: review the fee schedule and confirm international access.' },
+  'eToro': { reason:'Often used by investors interested in social or thematic features with a simple interface. Note the custodial structure and FX spread.', next:'Next step: review spreads and FX costs before scaling up.' },
+  'Tiger Brokers': { reason:'Commonly associated with lower brokerage and strong international access for active traders.', next:'Next step: check custody terms and FX fees for overseas trades.' },
+  'Syfe': { reason:'Often used by investors who want a hands-off managed portfolio approach with automation and minimal decisions required.', next:'Next step: choose a risk profile and set a recurring contribution.' },
+  'Stockspot': { reason:'Often used by investors looking for robo-advisor style automated diversification without the manual work.', next:'Next step: select a risk level and review ongoing fees.' },
+  'Raiz': { reason:'Commonly associated with micro-investing, round-up features, and small-balance convenience.', next:'Next step: link a bank account and choose a conservative starter portfolio.' },
+  'CommSec Pocket': { reason:'Often used by investors who want simple ETF investing in small parcels with a bank-backed app.', next:'Next step: choose a starter ETF bundle and set a regular deposit.' },
+  'Betashares Direct': { reason:'Commonly associated with lower-cost ETF access and a clean, simple interface.', next:'Next step: choose a core ETF and review custody details.' },
+  'Sharesies': { reason:'Often used by investors wanting accessible investing with fractional options and a beginner-friendly interface.', next:'Next step: confirm the custody model and start with a small ETF position.' }
+};
+
+function scorePlatform(p, s, extra) {
+  let score = 0;
+  const ctrl = s.control;
+  if (ctrl === 'Set and forget suits me') { if (p.robo||p.micro) score+=4; if (p.trading) score-=2; }
+  if (ctrl === 'Some control, some automation') { if (p.trading&&p.etf) score+=2; if (p.robo) score+=1; }
+  if (ctrl === 'Full control over every move') { if (p.trading) score+=4; if (p.robo||p.micro) score-=3; }
+
+  if (s.market !== 'Australia only') { if (p.intl) score+=3; if (p.fxLow) score+=2; } else { if (!p.intl) score+=1; }
+
+  if (s.fees === 'Non-negotiable') { if (p.cost===1) score+=3; if (p.cost===3) score-=2; if (p.subscription) score-=2; }
+  else if (s.fees === 'Important but flexible') { if (p.cost===1) score+=2; if (p.cost===3) score-=1; }
+
+  if (s.subscription === 'Yes, if the value is clear') { if (p.subscription) score+=2; }
+  else if (s.subscription === 'No, prefer zero subscription') { if (p.subscription) score-=2; }
+
+  if (s.experience === 'Brand new to this') { if (p.complexity>=2) score-=2; }
+  if (s.experience === 'Confident and experienced') { if (p.complexity>=2) score+=1; }
+
+  if (s.style === 'Simple diversified ETFs') { if (p.etf) score+=3; }
+  if (s.style === 'Picking my own investments') { if (p.trading) score+=3; if (p.robo||p.micro) score-=2; }
+
+  if (s.intent === 'Taking my first steps') { if (p.micro||p.robo) score+=2; if (p.complexity>=2) score-=1; }
+  if (s.intent === 'Chasing higher returns') { if (p.trading) score+=2; }
+  if (s.intent === 'Building long-term wealth') { if (p.etf) score+=2; if (p.robo) score+=1; }
+
+  if (s.chess && s.chess.startsWith('Yes') && p.chess) score+=2;
+
+  if (extra) {
+    if (extra.ui_load === 'Ultra simple and minimal') score += p.simplicity;
+    if (extra.ui_load === 'Clean but data-rich') score += p.info_rich;
+    if (extra.ui_load === 'Advanced with deep tools') score += p.advanced_tools;
+    if (extra.research_pref === 'Quick and low-research') score += p.simplicity;
+    if (extra.research_pref === 'Some research before buying') score += p.info_rich;
+    if (extra.research_pref === 'Data-driven, deep analysis') score += p.advanced_tools;
+    if (extra.device_pref === 'Mostly on mobile') score += p.mobile_first;
+    if (extra.device_pref === 'Equal mobile and desktop') score += (p.mobile_first+p.desktop_power)/2;
+    if (extra.device_pref === 'Mostly desktop') score += p.desktop_power;
+    if (extra.visibility_pref === 'Just the basics') score += p.simplicity;
+    if (extra.visibility_pref === 'Balanced overview and metrics') score += p.info_rich;
+    if (extra.visibility_pref === 'Full analytics and breakdowns') score += p.analytics_depth;
+    if (extra.guidance_pref === "Very little, I'll figure it out") score += p.advanced_tools;
+    if (extra.guidance_pref === 'Helpful but not in my face') score += p.education_guidance;
+    if (extra.guidance_pref === 'Strong guidance and learning tools') score += p.education_guidance*2;
+  }
+  return score;
+}
+
+function decidePlatform(s) { return decidePlatformExtended(s, null); }
+
+function decidePlatformExtended(s, extra) {
+  const wantsCHESS = s.chess && s.chess.startsWith('Yes');
+  const filtered = platforms.filter(p => wantsCHESS ? p.chess : true);
+  const ranked = filtered.map(p => ({...p, score: scorePlatform(p, s, extra)})).sort((a,b)=>b.score-a.score);
+  const winner = ranked[0] || {name:'CMC Markets Invest'};
+  const blurb = blurbs[winner.name] || blurbs['CMC Markets Invest'];
+  return { platform: winner.name, reason: blurb.reason, next: blurb.next, warning: winner.subscription ? 'Note: subscription fees may outweigh savings for smaller balances. Worth checking the numbers.' : '' };
+}
+
+// ═══════════════════════════════════════
+//  CALCULATOR
+// ═══════════════════════════════════════
+
+function fv(init, annual, rate, yrs) {
+  if (rate === 0) return init + annual * yrs;
+  const g = Math.pow(1+rate, yrs);
+  return init*g + annual*((g-1)/rate);
+}
+
+function avgBalance(init, annual, r, yrs) {
+  return yrs === 0 ? init : (init + fv(init, annual, r, yrs)) / 2;
+}
+
+function fmtAUD(v) { return new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',maximumFractionDigits:0}).format(v); }
+
+function updateCalc() {
+  const get = id => parseFloat(document.getElementById(id).value)||0;
+  const init = get('c_initial'), annual = get('c_annual'), yrs = Math.max(0,Math.round(get('c_years')));
+  const ret = get('c_return')/100, pfee = get('c_platform_fee')/100, etffee = get('c_etf_fee')/100;
+  const sub = get('c_sub_initial'), brok = get('c_brokerage'), trades = get('c_trades'), fx = get('c_fx')/100;
+  const annualBrok = brok * trades;
+  const effAnnual = Math.max(0, annual - annualBrok - sub);
+  const rNet = ret - (pfee+etffee+fx);
+  const fvWith = fv(Math.max(0,init), effAnnual, rNet, yrs);
+  const fvWithout = fv(init, annual, ret, yrs);
+  const drag = Math.max(0, fvWithout - fvWith);
+  const dragPct = fvWithout > 0 ? (drag/fvWithout)*100 : 0;
+
+  document.getElementById('co_with').textContent = fmtAUD(fvWith);
+  document.getElementById('co_without').textContent = fmtAUD(fvWithout);
+  document.getElementById('co_cost').textContent = fmtAUD(drag);
+  document.getElementById('co_drag').textContent = dragPct.toFixed(2)+'%';
+
+  drawCalcChart(Math.max(0,init), annual, effAnnual, ret, rNet, yrs);
+}
+
+function drawCalcChart(init, annual, effAnnual, r, rNet, yrs) {
+  const canvas = document.getElementById('calcChart');
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height, pad = 36;
+
+  const sw = [], sf = [];
+  for (let y=0; y<=yrs; y++) { sw.push(fv(init,annual,r,y)); sf.push(fv(init,effAnnual,rNet,y)); }
+  const maxV = Math.max(...sw,...sf,1);
+
+  chartState = {sw, sf, maxV, yrs, hoverX: null};
+
+  const t0 = performance.now();
+  function animate(now) {
+    const p = Math.min(1, (now-t0)/1800);
+    const ease = 1-Math.pow(1-p,3);
+    renderCalcChart(ctx, w, h, pad, sw, sf, maxV, yrs, ease);
+    if (p < 1) requestAnimationFrame(animate);
+    else chartState.render = () => renderCalcChart(ctx,w,h,pad,sw,sf,maxV,yrs,1);
+  }
+  requestAnimationFrame(animate);
+}
+
+function fmtShort(v) {
+  if (v>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
+  if (v>=1e3) return '$'+(v/1e3).toFixed(0)+'k';
+  return '$'+Math.round(v);
+}
+
+function renderCalcChart(ctx, w, h, pad, sw, sf, maxV, yrs, t) {
+  ctx.clearRect(0,0,w,h);
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 1;
+  for (let i=0; i<=4; i++) {
+    const y = h-pad-(i/4)*(h-pad*2);
+    ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(w-pad,y); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='10px JetBrains Mono,monospace';
+    ctx.fillText(fmtShort(Math.round(i/4*maxV)), 4, y+3);
+  }
+  const xTicks = Math.min(5,yrs);
+  for (let i=0; i<=xTicks; i++) {
+    const x = pad+(i/xTicks)*(w-pad*2);
+    ctx.beginPath(); ctx.moveTo(x,h-pad); ctx.lineTo(x,h-pad+5); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.font='10px JetBrains Mono,monospace';
+    ctx.fillText(String(Math.round(i/xTicks*yrs)), x-6, h-pad+16);
+  }
+  // Axes
+  ctx.strokeStyle='rgba(255,255,255,0.15)';
+  ctx.beginPath(); ctx.moveTo(pad,h-pad); ctx.lineTo(w-pad,h-pad); ctx.lineTo(w-pad,pad); ctx.stroke();
+
+  // Draw line helper
+  function dl(series, col, glow) {
+    const pts = Math.floor(series.length*t);
+    const denom = Math.max(1,series.length-1);
+    ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=2.5;
+    ctx.shadowColor=glow; ctx.shadowBlur=10;
+    ctx.beginPath();
+    for (let i=0; i<pts; i++) {
+      const x = pad+(i/denom)*(w-pad*2);
+      const y = h-pad-(series[i]/maxV)*(h-pad*2);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke(); ctx.restore();
+  }
+
+  dl(sw, 'rgba(255,255,255,0.65)', 'rgba(255,255,255,0.2)');
+  dl(sf, '#00ff87', 'rgba(0,255,135,0.5)');
+
+  // Hover
+  if (chartState && chartState.hoverX != null) {
+    const tRatio = Math.max(0,Math.min(1,(chartState.hoverX-pad)/(w-pad*2)));
+    const denom = Math.max(1,sw.length-1);
+    const idx = Math.round(tRatio*denom);
+    const x = pad+(idx/denom)*(w-pad*2);
+    ctx.strokeStyle='rgba(255,255,255,0.2)'; ctx.beginPath(); ctx.moveTo(x,pad); ctx.lineTo(x,h-pad); ctx.stroke();
+    const fmt = new Intl.NumberFormat('en-AU',{style:'currency',currency:'AUD',maximumFractionDigits:0});
+    ctx.fillStyle='rgba(0,0,0,0.75)'; ctx.fillRect(x+6,pad+4,200,20);
+    ctx.fillStyle='white'; ctx.font='11px JetBrains Mono,monospace';
+    ctx.fillText(`Yr ${idx}: ${fmt.format(sf[idx])} (fees)`, x+10, pad+17);
+  }
+}
+
+function applyPlatformPreset(platform) {
+  const presets = {
+    'CMC Markets Invest':{pfee:0,efee:0.2,sub:0,fx:0.6},'Stake':{pfee:0,efee:0.2,sub:0,fx:0.7},
+    'Interactive Brokers Australia':{pfee:0,efee:0.2,sub:0,fx:0.03},'Saxo Invested':{pfee:0,efee:0.2,sub:0,fx:0.25},
+    'Webull':{pfee:0,efee:0.2,sub:0,fx:0.5},'Moomoo':{pfee:0,efee:0.2,sub:0,fx:0.55},
+    'Superhero':{pfee:0,efee:0.2,sub:0,fx:0.65},'Easy Equities':{pfee:0,efee:0.2,sub:0,fx:0.7},
+    'Pearler':{pfee:0.2,efee:0.2,sub:0,fx:0.6},'SelfWealth':{pfee:0.2,efee:0.2,sub:0,fx:0.7},
+    'CommSec':{pfee:0.25,efee:0.2,sub:0,fx:0.7},'NABtrade':{pfee:0.25,efee:0.2,sub:0,fx:0.7},
+    'Bell Direct':{pfee:0.25,efee:0.2,sub:0,fx:0.7},'IG Share Trading':{pfee:0.25,efee:0.2,sub:0,fx:0.7},
+    'eToro':{pfee:0.3,efee:0.2,sub:0,fx:0.9},'Tiger Brokers':{pfee:0.2,efee:0.2,sub:0,fx:0.6},
+    'Syfe':{pfee:0.35,efee:0.2,sub:0,fx:0.6},'Stockspot':{pfee:0.5,efee:0.2,sub:0,fx:0.6},
+    'Raiz':{pfee:0.5,efee:0.2,sub:0,fx:0},'CommSec Pocket':{pfee:0.2,efee:0.2,sub:0,fx:0},
+    'Betashares Direct':{pfee:0,efee:0.2,sub:0,fx:0},'Sharesies':{pfee:0.3,efee:0.2,sub:0,fx:0.6}
+  };
+  const p = presets[platform];
+  if (!p) return;
+  document.getElementById('c_platform_fee').value = p.pfee;
+  document.getElementById('c_etf_fee').value = p.efee;
+  document.getElementById('c_sub_initial').value = p.sub;
+  document.getElementById('c_fx').value = p.fx;
+}
+
+// ═══════════════════════════════════════
+//  STATE SHARE
+// ═══════════════════════════════════════
+
+function encodeState(obj) {
+  try { return encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(obj))))); } catch(e) { return ''; }
+}
+
+function decodeState(str) {
+  try { return JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(str))))); } catch(e) { return null; }
+}
+
+async function copyShareLink(includeExtra) {
+  const url = new URL(window.location.href.split('#')[0]);
+  url.searchParams.set('s', encodeState(state));
+  if (includeExtra) url.searchParams.set('e', encodeState(extraState));
+  try {
+    await navigator.clipboard.writeText(url.toString());
+    alert('Link copied to clipboard.');
+  } catch(e) {
+    prompt('Copy this link:', url.toString());
+  }
+}
+
+// ═══════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════
+
+function resetToStart() {
+  step = 0; extraStep = 0; flow = 'base';
+  for (const k in state) delete state[k];
+  for (const k in extraState) delete extraState[k];
+  fadeTo(screens.welcome);
+}
+
+// ═══════════════════════════════════════
+//  EVENT LISTENERS
+// ═══════════════════════════════════════
+
+screens.welcome.addEventListener('click', () => {
+  const blackout = document.getElementById('blackout');
+  screens.welcome.classList.add('welcome-zoom');
+  requestAnimationFrame(() => screens.welcome.classList.add('welcome-zoom-active'));
+  setTimeout(() => {
+    blackout.classList.add('show');
+    setTimeout(() => {
+      screens.welcome.style.display = 'none';
+      fadeTo(screens.method);
+      showMethodSequence();
+      screens.welcome.classList.remove('welcome-zoom','welcome-zoom-active');
+      screens.welcome.style.display = '';
+      blackout.classList.remove('show');
+    }, 220);
+  }, 2000);
+}, {once:true});
+
+screens.method.addEventListener('click', () => {
+  fadeTo(screens.quiz);
+  setTimeout(renderQuestion, 500);
+}, {once:true});
+
+document.getElementById('btnMoreQs').addEventListener('click', () => {
+  initAudio(); playClick();
+  flow = 'extra'; extraStep = 0;
+  fadeTo(screens.quiz);
+  setTimeout(renderQuestion, 200);
+});
+
+document.getElementById('btnCalculator').addEventListener('click', () => {
+  initAudio(); playClick();
+  fadeTo(screens.calculator);
+  setTimeout(() => { applyPlatformPreset(lastPlatform); updateCalc(); }, 100);
+});
+
+document.getElementById('btnExplains').addEventListener('click', () => { initAudio(); playClick(); fadeTo(screens.explains); });
+document.getElementById('btnExplains2').addEventListener('click', () => { initAudio(); playClick(); fadeTo(screens.explains); });
+document.getElementById('btnRestart2').addEventListener('click', resetToStart);
+document.getElementById('btnRestartCalc').addEventListener('click', resetToStart);
+
+document.getElementById('btnShareResult').addEventListener('click', () => { initAudio(); playClick(); copyShareLink(false); });
+document.getElementById('btnShareResult2').addEventListener('click', () => { initAudio(); playClick(); copyShareLink(true); });
+
+document.getElementById('btnBackFromExplain').addEventListener('click', () => {
+  initAudio(); playClick();
+  fadeTo(flow === 'extra' ? screens.result2 : screens.result);
+});
+
+document.getElementById('btnAskExplain').addEventListener('click', async () => {
+  initAudio(); playClick();
+  const output = document.getElementById('explainOutput');
+  const general = document.getElementById('x_general').value.trim();
+  const asset = document.getElementById('x_asset').value.trim();
+  const timeframe = document.getElementById('x_timeframe').value.trim();
+  const question = document.getElementById('x_question').value.trim();
+
+  if (!general && !question && !asset && !timeframe) {
+    output.textContent = 'Please enter a question above.';
+    return;
+  }
+
+  const structured = [asset&&`Asset class: ${asset}`, timeframe&&`Timeframe: ${timeframe}`, question&&`Question: ${question}`]
+    .filter(Boolean).join(' | ');
+  const prompt = general || structured;
+
+  output.className = 'explains-output loading';
+  output.textContent = 'OSCAR is thinking...';
+
+  try {
+    const res = await fetch('/api/oscar-explains', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({prompt, style:'medium', context:'General educational information only. Do not provide personal financial advice.'})
+    });
+    if (!res.ok) throw new Error('fail');
+    const data = await res.json();
+    output.className = 'explains-output has-response';
+    output.textContent = data.answer || 'No response returned.';
+  } catch(e) {
+    output.className = 'explains-output';
+    output.textContent = 'Unable to reach OSCAR right now. Please try again shortly.';
+  }
+});
+
+['c_initial','c_annual','c_years','c_return','c_platform_fee','c_etf_fee','c_sub_initial','c_brokerage','c_trades','c_fx'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateCalc);
+});
+
+const calcCanvas = document.getElementById('calcChart');
+if (calcCanvas) {
+  calcCanvas.addEventListener('mousemove', (e) => {
+    if (!chartState) return;
+    chartState.hoverX = e.clientX - calcCanvas.getBoundingClientRect().left;
+    chartState.render?.();
+  });
+  calcCanvas.addEventListener('mouseleave', () => {
+    if (!chartState) return;
+    chartState.hoverX = null;
+    chartState.render?.();
+  });
+}
+
+// ═══════════════════════════════════════
+//  METHOD SEQUENCE
+// ═══════════════════════════════════════
+
+function showMethodSequence() {
+  const ids = ['mLabel','mTitle','mSubtitle','hostMethodWrap','bubbleMethod'];
+  ids.forEach((id,i) => setTimeout(() => document.getElementById(id)?.classList.add('show'), i*800+300));
+  setTimeout(() => document.getElementById('ms1')?.classList.add('show'), 5000);
+  setTimeout(() => document.getElementById('ms2')?.classList.add('show'), 6200);
+  setTimeout(() => document.getElementById('ms3')?.classList.add('show'), 7400);
+  setTimeout(() => {
+    document.getElementById('methodContinue')?.classList.add('show');
+    document.getElementById('methodFooter')?.classList.add('show');
+  }, 9000);
+}
+
+// ═══════════════════════════════════════
+//  DEEP LINK / HASH NAV
+// ═══════════════════════════════════════
+
+function handleDeepLink() {
+  const params = new URLSearchParams(window.location.search);
+  const base = params.get('s');
+  if (!base) return false;
+  const decoded = decodeState(base);
+  if (!decoded) return false;
+  Object.assign(state, decoded);
+  const extra = params.get('e');
+  if (extra) {
+    const de = decodeState(extra);
+    if (de) { Object.assign(extraState, de); showResult2(); }
+  } else {
+    const r = decidePlatform(state);
+    lastPlatform = r.platform;
+    fadeTo(screens.result);
+    document.getElementById('resultPlatform').textContent = r.platform;
+    document.getElementById('resultReason').textContent = r.reason;
+    document.getElementById('resultNext').textContent = r.next||'';
+  }
+  return true;
+}
+
+function handleHash() {
+  if (window.location.hash === '#explains') { fadeTo(screens.explains); return true; }
+  if (window.location.hash === '#quiz') { fadeTo(screens.quiz); setTimeout(renderQuestion, 200); return true; }
+  return false;
+}
+
+if (!handleDeepLink()) handleHash();
+</script>
+</body>
+</html>
