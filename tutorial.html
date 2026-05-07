@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>OSCAR: The Investor's Tutorial</title>
+<meta name="description" content="Learn the essentials of investing before you start. Stocks, ETFs, fees, CHESS and more, explained simply."/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  --bg: #08090d;
+  --bg2: #0d0f17;
+  --bg3: #111420;
+  --text: #f0f2f8;
+  --muted: rgba(240,242,248,0.56);
+  --dim: rgba(240,242,248,0.3);
+  --green: #00ff87;
+  --blue: #4d9fff;
+  --violet: #a259ff;
+  --amber: #ffc642;
+  --red: #ff4d6a;
+  --line: rgba(255,255,255,0.07);
+  --line2: rgba(255,255,255,0.12);
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { width:100%; height:100%; overflow:hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+/* ── BACKGROUND ─────────────────────────────── */
+.bg {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 900px 500px at 10% 10%, rgba(77,159,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 700px 600px at 90% 90%, rgba(162,89,255,0.06) 0%, transparent 60%);
+}
+.scanlines {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.009) 2px,rgba(255,255,255,0.009) 4px);
+}
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star {
+  position: absolute; width: 2px; height: 2px; border-radius: 50%; background: white;
+  animation: sp var(--d,4s) ease-in-out infinite var(--dl,0s);
+}
+@keyframes sp { 0%,100%{opacity:var(--mn,.1)} 50%{opacity:var(--mx,.5)} }
+
+/* ── NAV ─────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 28px;
+  background: rgba(8,9,13,0.75);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--line);
+}
+.nav-brand {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 1rem; letter-spacing: 0.1em; color: var(--text);
+  text-decoration: none; display: flex; align-items: center; gap: 8px;
+}
+.nav-brand svg { width: 20px; height: 20px; }
+.nav-back {
+  font-size: 0.8rem; color: var(--muted); text-decoration: none;
+  display: flex; align-items: center; gap: 6px; transition: color 0.2s;
+}
+.nav-back:hover { color: var(--text); }
+
+/* ── PROGRESS ────────────────────────────────── */
+.prog-bar {
+  position: fixed; top: 52px; left: 0; right: 0; z-index: 49;
+  height: 3px; background: var(--line);
+}
+.prog-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--violet));
+  box-shadow: 0 0 10px rgba(77,159,255,0.4);
+  transition: width 0.55s cubic-bezier(0.34,1.2,0.64,1);
+}
+
+/* ── SLIDES ──────────────────────────────────── */
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+  z-index: 1;
+}
+.slide.active { opacity: 1; pointer-events: auto; }
+
+/* ── CONTENT CARD ────────────────────────────── */
+.card {
+  background: rgba(13,15,23,0.88);
+  border: 1px solid var(--line2);
+  border-radius: 24px;
+  width: min(860px, 100%);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  overflow: hidden;
+  position: relative;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--violet), transparent);
+}
+
+/* card with two columns */
+.card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 380px;
+}
+.card-left {
+  padding: 36px 36px 28px;
+  display: flex; flex-direction: column; justify-content: center;
+  border-right: 1px solid var(--line);
+}
+.card-right {
+  padding: 28px 24px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.15);
+}
+
+/* card single column (for quiz checks) */
+.card-body.single { grid-template-columns: 1fr; }
+.card-body.single .card-left { border-right: none; padding: 36px 40px 28px; max-width: 640px; margin: 0 auto; width: 100%; }
+
+.card-chapter {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.62rem;
+  color: var(--blue); letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.chapter-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--blue); box-shadow: 0 0 6px var(--blue);
+}
+.card-title {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -0.02em;
+  line-height: 1.1; margin-bottom: 14px;
+}
+.card-body-text {
+  font-size: 0.92rem; color: var(--muted); line-height: 1.7; margin-bottom: 16px;
+}
+.card-body-text strong { color: var(--text); font-weight: 600; }
+
+.def-box {
+  background: rgba(77,159,255,0.06);
+  border: 1px solid rgba(77,159,255,0.2);
+  border-radius: 12px; padding: 13px 16px; margin-bottom: 16px;
+}
+.def-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+  color: var(--blue); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px;
+}
+.def-text { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+.def-text strong { color: var(--text); }
+
+.pts { display: flex; flex-direction: column; gap: 7px; }
+.pt {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: 0.85rem; color: var(--muted); line-height: 1.5;
+}
+.pt-icon {
+  width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 3px;
+  background: rgba(77,159,255,0.1); border: 1px solid rgba(77,159,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+}
+.pt-icon svg { width: 8px; height: 8px; }
+
+/* visual panel */
+.vis { width: 100%; max-width: 300px; }
+.vis svg { width: 100%; height: auto; }
+
+/* quiz answers */
+.answers { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.answer {
+  width: 100%; display: flex; align-items: center; gap: 13px;
+  padding: 13px 16px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--line2); border-radius: 13px;
+  color: var(--text); font-size: 0.92rem;
+  font-family: 'DM Sans', sans-serif; font-weight: 500;
+  cursor: pointer; text-align: left;
+  transition: all 0.18s ease;
+}
+.answer:hover:not(:disabled) {
+  border-color: rgba(77,159,255,0.4);
+  background: rgba(77,159,255,0.05);
+  transform: translateX(4px);
+}
+.answer.correct { border-color: var(--green); background: rgba(0,255,135,0.06); }
+.answer.wrong { border-color: var(--red); background: rgba(255,77,106,0.06); }
+.answer-key {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  background: var(--line); border: 1px solid var(--line2);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--dim);
+  transition: all 0.18s;
+}
+.answer:hover:not(:disabled) .answer-key { background: rgba(77,159,255,0.15); border-color: rgba(77,159,255,0.4); color: var(--blue); }
+.answer.correct .answer-key { background: rgba(0,255,135,0.15); border-color: var(--green); color: var(--green); }
+.answer.wrong .answer-key { background: rgba(255,77,106,0.1); border-color: var(--red); color: var(--red); }
+
+.feedback {
+  padding: 11px 15px; border-radius: 11px; font-size: 0.85rem; line-height: 1.5;
+  display: none;
+}
+.feedback.show { display: block; }
+.feedback.ok { background: rgba(0,255,135,0.07); color: var(--green); border: 1px solid rgba(0,255,135,0.2); }
+.feedback.no { background: rgba(255,77,106,0.07); color: var(--red); border: 1px solid rgba(255,77,106,0.2); }
+
+/* card footer */
+.card-footer {
+  padding: 16px 28px;
+  border-top: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px;
+}
+.dots { display: flex; gap: 6px; }
+.dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--line2);
+  transition: background 0.25s, transform 0.25s; cursor: pointer;
+}
+.dot.active { background: var(--blue); transform: scale(1.35); }
+.dot.done { background: var(--green); }
+.nav-btns { display: flex; gap: 9px; }
+
+.btn {
+  padding: 10px 22px; border-radius: 11px; font-weight: 600;
+  font-size: 0.88rem; font-family: 'DM Sans', sans-serif;
+  cursor: pointer; border: 1px solid; transition: all 0.2s;
+}
+.btn-blue { background: var(--blue); color: #04111e; border-color: var(--blue); }
+.btn-blue:hover { background: #6fb3ff; box-shadow: 0 6px 20px rgba(77,159,255,0.3); }
+.btn-green { background: var(--green); color: #04120a; border-color: var(--green); }
+.btn-green:hover { background: #33ffaa; box-shadow: 0 6px 20px rgba(0,255,135,0.3); }
+.btn-ghost { background: transparent; color: var(--muted); border-color: var(--line2); }
+.btn-ghost:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+
+@media (max-width: 720px) {
+  .card-body { grid-template-columns: 1fr; }
+  .card-left { border-right: none; border-bottom: 1px solid var(--line); padding: 24px 20px; }
+  .card-right { padding: 20px; min-height: 180px; }
+  nav { padding: 12px 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+<div class="scanlines"></div>
+<div class="stars" id="stars"></div>
+
+<nav>
+  <a class="nav-brand" href="landing.html">
+    <svg viewBox="0 0 32 32" fill="none"><polygon points="16,6 26,13 22,26 10,26 6,13" fill="rgba(0,255,135,0.15)" stroke="#00ff87" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    OSCAR
+  </a>
+  <a class="nav-back" href="landing.html">Back to home</a>
+</nav>
+
+<div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+
+<div id="slides"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  CHAPTER DATA
+// ═══════════════════════════════════════════════
+
+const CHAPTERS = [
+  {
+    type: 'content',
+    chapter: 'Chapter 1',
+    title: 'What is investing?',
+    body: 'Investing means putting your money to work. Instead of leaving cash sitting in a bank account slowly losing value to inflation, you buy assets that can <strong>grow in value over time</strong>.',
+    def: { k: 'Investing', v: 'Allocating money into assets today with the expectation of getting <strong>more back in the future</strong> through growth or income.' },
+    pts: [
+      'Money grows through price increases and regular income (dividends)',
+      'Time in the market consistently beats trying to time the market',
+      'Starting early is the single biggest advantage you have',
+    ],
+    vis: 'growth',
+  },
+  {
+    type: 'content',
+    chapter: 'Chapter 2',
+    title: 'What is a stock?',
+    body: 'A stock is a small piece of ownership in a company. When you buy a share, you become a <strong>part-owner of that business</strong>, entitled to a slice of its profits and growth.',
+    def: { k: 'Stock / Share', v: 'A unit of ownership in a company. If a company has <strong>1,000,000 shares</strong> and you own 100, you own 0.01% of that business.' },
+    pts: [
+      'Companies issue shares to raise money to grow',
+      'Share price rises when more people want to buy than sell',
+      'You profit when the price rises above what you paid',
+    ],
+    vis: 'own',
+  },
+  {
+    type: 'quiz',
+    chapter: 'Chapter 2 Check',
+    title: 'Quick check',
+    question: 'Buying a share of a company makes you a...',
+    options: ['A lender', 'A part-owner', 'An employee', 'A creditor'],
+    correct: 1,
+    feedbackOk: 'Correct. Shareholders are part-owners of the business and share in its profits and growth.',
+    feedbackNo: 'Not quite. Buying shares makes you a part-owner. You own a fraction of the company itself.',
+  },
+  {
+    type: 'content',
+    chapter: 'Chapter 3',
+    title: 'Buying and selling',
+    body: 'Stocks are bought and sold on a <strong>stock exchange</strong>. In Australia that is the ASX. You place an order through a broker app and it matches you with another investor willing to sell.',
+    def: { k: 'ASX', v: 'The <strong>Australian Securities Exchange</strong>, the marketplace where Australian shares are listed and traded during business hours.' },
+    pts: [
+      'Market order: buy immediately at the current price',
+      'Limit order: set the maximum price you are willing to pay',
+      'Trades settle 2 business days after the transaction (T+2)',
+    ],
+    vis: 'trade',
+  },
+  {
+    type: 'content',
+    chapter: 'Chapter 4',
+    title: 'What is an ETF?',
+    body: 'An ETF (Exchange Traded Fund) is a basket of many stocks bundled into one. Instead of picking individual companies, you get <strong>instant diversification</strong> with a single trade.',
+    def: { k: 'ETF', v: 'A fund that tracks an index and trades on the stock exchange like a regular share. One purchase spreads your money across <strong>dozens or hundreds of companies</strong>.' },
+    pts: [
+      'Much lower risk than betting on a single stock',
+      'Very low ongoing fees, typically 0.07% to 0.20% per year',
+      'Examples: VAS (top 300 Aus companies), VGS (global stocks)',
+    ],
+    vis: 'etf',
+  },
+  {
+    type: 'quiz',
+    chapter: 'Chapter 4 Check',
+    title: 'Quick check',
+    question: 'What is the main advantage of an ETF over buying a single stock?',
+    options: ['Higher guaranteed returns', 'Instant diversification', 'No fees at all', 'Only available in Australia'],
+    correct: 1,
+    feedbackOk: 'Correct. ETFs spread your money across many companies at once, reducing the impact of any one company failing.',
+    feedbackNo: 'Not quite. The core benefit is diversification. Your money is spread across many companies in one trade.',
+  },
+  {
+    type: 'content',
+    chapter: 'Chapter 5',
+    title: 'How do you make money?',
+    body: 'There are two ways to profit from shares: <strong>capital growth</strong> (price goes up, you sell higher than you bought) and <strong>dividends</strong> (the company pays you a share of its profits while you hold).',
+    def: { k: 'Dividend', v: 'A cash payment made by a company to its shareholders, usually quarterly or annually, as a distribution of <strong>company profits</strong>.' },
+    pts: [
+      'Capital growth: sell your shares for more than you paid',
+      'Dividends: regular cash paid just for holding the shares',
+      'Many Australian companies offer franking credits on dividends, a tax advantage',
+    ],
+    vis: 'returns',
+  },
+  {
+    type: 'content',
+    chapter: 'Chapter 6',
+    title: 'Understanding fees',
+    body: 'Every platform charges fees in different ways. These costs quietly reduce your returns over time. <strong>Small differences in fees compound into large differences</strong> over a decade.',
+    def: { k: 'Brokerage', v: 'A fee charged each time you buy or sell a share. Can be flat (e.g. $9.50 per trade) or zero. Some platforms now offer <strong>zero brokerage</strong> on ASX trades.' },
+    pts: [
+      'Brokerage: charged per trade, ranges from $0 to $20+',
+      'Platform fee: ongoing annual or monthly account cost',
+      'FX spread: extra cost applied when buying shares overseas',
+      'ETF MER: the fund manager\'s annual fee, taken from the fund automatically',
+    ],
+    vis: 'fees',
+  },
+  {
+    type: 'quiz',
+    chapter: 'Chapter 6 Check',
+    title: 'Quick check',
+    question: 'Which fee is charged each time you place a trade?',
+    options: ['Platform fee', 'ETF MER', 'Brokerage', 'FX spread'],
+    correct: 2,
+    feedbackOk: 'Correct. Brokerage is the per-trade cost. Platform fees are ongoing, and MER is the fund manager\'s annual cut.',
+    feedbackNo: 'Not quite. Brokerage is the per-trade fee. Platform fees are ongoing costs and MER is deducted from the fund automatically.',
+  },
+  {
+    type: 'content',
+    chapter: 'Chapter 7',
+    title: 'CHESS vs Custodial',
+    body: 'When you buy shares in Australia, ownership is held in one of two ways. This distinction matters more than most platforms will tell you.',
+    def: { k: 'CHESS Sponsorship', v: 'Your shares are registered <strong>directly in your name</strong> on the ASX clearing system. You get a unique Holder ID Number (HIN) and legally own the assets outright.' },
+    pts: [
+      'CHESS: shares registered in your name, you own them directly',
+      'Custodial: the platform holds shares on your behalf in a pooled account',
+      'If a custodial platform fails, accessing your assets may be complicated',
+      'CHESS is generally considered the safer ownership structure in Australia',
+    ],
+    vis: 'chess',
+  },
+  {
+    type: 'quiz',
+    chapter: 'Chapter 7 Check',
+    title: 'Quick check',
+    question: 'With CHESS sponsorship, who legally owns your shares?',
+    options: ['The broker', 'The ASX', 'You, directly', 'The government'],
+    correct: 2,
+    feedbackOk: 'Correct. CHESS means the shares are registered directly in your name, not held by the broker.',
+    feedbackNo: 'Not quite. CHESS sponsorship means the shares are in your name on the ASX system. You own them outright.',
+  },
+  {
+    type: 'complete',
+    chapter: 'Chapter 8',
+    title: 'You are ready.',
+    body: 'That covers the essentials. You now understand what stocks are, how trading works, what ETFs do, how returns are generated, how fees compound, and what CHESS means. <strong>That puts you ahead of most first-time investors.</strong>',
+    def: null,
+    pts: [
+      'Start simple ,  one diversified ETF is a solid first move',
+      'Keep fees low and stay invested for the long run',
+      'Use OSCAR to find the platform that best fits your needs',
+    ],
+    vis: 'done',
+  },
+];
+
+// ═══════════════════════════════════════════════
+//  SVG VISUALS
+// ═══════════════════════════════════════════════
+
+const VISUALS = {
+  growth: `<svg viewBox="0 0 300 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="30" y1="165" x2="280" y2="165" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+    <line x1="30" y1="20" x2="30" y2="165" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"/>
+    <defs>
+      <linearGradient id="gfill" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#4d9fff" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#4d9fff" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M30,150 C65,142 100,128 135,108 C170,88 205,58 270,26" fill="none" stroke="#4d9fff" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M30,150 C65,142 100,128 135,108 C170,88 205,58 270,26 L270,165 L30,165 Z" fill="url(#gfill)"/>
+    <circle cx="270" cy="26" r="5" fill="#4d9fff"/>
+    <circle cx="270" cy="26" r="10" fill="#4d9fff" opacity="0.15"/>
+    <text x="278" y="30" fill="#4d9fff" font-size="10" font-family="JetBrains Mono,monospace">+84%</text>
+    <text x="32" y="178" fill="rgba(255,255,255,0.2)" font-size="8.5" font-family="JetBrains Mono,monospace">Year 1</text>
+    <text x="236" y="178" fill="rgba(255,255,255,0.2)" font-size="8.5" font-family="JetBrains Mono,monospace">Year 10</text>
+    <text x="32" y="56" fill="rgba(255,255,255,0.15)" font-size="8.5" font-family="JetBrains Mono,monospace">$10,000 invested</text>
+    <text x="32" y="70" fill="rgba(255,255,255,0.15)" font-size="8.5" font-family="JetBrains Mono,monospace">at 7% average return</text>
+  </svg>`,
+
+  own: `<svg viewBox="0 0 300 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="108" y="14" width="84" height="50" rx="9" fill="rgba(77,159,255,0.08)" stroke="#4d9fff" stroke-width="1.5"/>
+    <text x="150" y="37" fill="#4d9fff" font-size="10.5" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">COMPANY</text>
+    <text x="150" y="53" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">1,000,000 shares</text>
+    <line x1="110" y1="64" x2="66" y2="108" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="4,3"/>
+    <line x1="150" y1="64" x2="150" y2="108" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="4,3"/>
+    <line x1="190" y1="64" x2="234" y2="108" stroke="rgba(255,255,255,0.1)" stroke-width="1" stroke-dasharray="4,3"/>
+    <circle cx="66" cy="130" r="24" fill="rgba(0,255,135,0.1)" stroke="#00ff87" stroke-width="1.5"/>
+    <text x="66" y="127" fill="#00ff87" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle" font-weight="600">YOU</text>
+    <text x="66" y="138" fill="#00ff87" font-size="7.5" font-family="JetBrains Mono,monospace" text-anchor="middle">100 shares</text>
+    <circle cx="150" cy="130" r="24" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="150" y="133" fill="rgba(255,255,255,0.2)" font-size="8" font-family="JetBrains Mono,monospace" text-anchor="middle">others</text>
+    <circle cx="234" cy="130" r="24" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="234" y="133" fill="rgba(255,255,255,0.2)" font-size="8" font-family="JetBrains Mono,monospace" text-anchor="middle">others</text>
+    <text x="66" y="168" fill="rgba(255,255,255,0.2)" font-size="8" font-family="JetBrains Mono,monospace" text-anchor="middle">= 0.01% owner</text>
+  </svg>`,
+
+  trade: `<svg viewBox="0 0 300 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="12" y="62" width="82" height="66" rx="10" fill="rgba(0,255,135,0.07)" stroke="#00ff87" stroke-width="1.5"/>
+    <text x="53" y="90" fill="#00ff87" font-size="10.5" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">YOU</text>
+    <text x="53" y="106" fill="rgba(255,255,255,0.25)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">place order</text>
+    <rect x="206" y="62" width="82" height="66" rx="10" fill="rgba(255,198,66,0.07)" stroke="#ffc642" stroke-width="1.5"/>
+    <text x="247" y="90" fill="#ffc642" font-size="10.5" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">SELLER</text>
+    <text x="247" y="106" fill="rgba(255,255,255,0.25)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">another investor</text>
+    <rect x="114" y="78" width="72" height="34" rx="8" fill="rgba(77,159,255,0.1)" stroke="#4d9fff" stroke-width="1.2"/>
+    <text x="150" y="94" fill="#4d9fff" font-size="10" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">ASX</text>
+    <text x="150" y="106" fill="rgba(255,255,255,0.2)" font-size="7.5" font-family="JetBrains Mono,monospace" text-anchor="middle">exchange</text>
+    <path d="M94,95 L114,95" stroke="#00ff87" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <path d="M186,95 L206,95" stroke="#ffc642" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <text x="150" y="160" fill="rgba(255,255,255,0.18)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Settles T+2 business days</text>
+  </svg>`,
+
+  etf: `<svg viewBox="0 0 300 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="110" y="8" width="80" height="36" rx="8" fill="rgba(77,159,255,0.12)" stroke="#4d9fff" stroke-width="1.5"/>
+    <text x="150" y="24" fill="#4d9fff" font-size="10.5" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">YOUR ETF</text>
+    <text x="150" y="36" fill="rgba(255,255,255,0.3)" font-size="8" font-family="JetBrains Mono,monospace" text-anchor="middle">1 purchase</text>
+    <line x1="150" y1="44" x2="46" y2="82" stroke="rgba(77,159,255,0.2)" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="150" y1="44" x2="104" y2="82" stroke="rgba(77,159,255,0.2)" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="150" y1="44" x2="150" y2="82" stroke="rgba(77,159,255,0.2)" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="150" y1="44" x2="196" y2="82" stroke="rgba(77,159,255,0.2)" stroke-width="1" stroke-dasharray="3,2"/>
+    <line x1="150" y1="44" x2="254" y2="82" stroke="rgba(77,159,255,0.2)" stroke-width="1" stroke-dasharray="3,2"/>
+    <rect x="18" y="82" width="56" height="26" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="46" y="99" fill="rgba(255,255,255,0.4)" font-size="9" font-family="JetBrains Mono,monospace" text-anchor="middle">CBA</text>
+    <rect x="76" y="82" width="56" height="26" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="104" y="99" fill="rgba(255,255,255,0.4)" font-size="9" font-family="JetBrains Mono,monospace" text-anchor="middle">BHP</text>
+    <rect x="122" y="82" width="56" height="26" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="150" y="99" fill="rgba(255,255,255,0.4)" font-size="9" font-family="JetBrains Mono,monospace" text-anchor="middle">CSL</text>
+    <rect x="168" y="82" width="56" height="26" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="196" y="99" fill="rgba(255,255,255,0.4)" font-size="9" font-family="JetBrains Mono,monospace" text-anchor="middle">WES</text>
+    <rect x="226" y="82" width="56" height="26" rx="6" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+    <text x="254" y="99" fill="rgba(255,255,255,0.4)" font-size="9" font-family="JetBrains Mono,monospace" text-anchor="middle">+296</text>
+    <text x="150" y="150" fill="rgba(255,255,255,0.18)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">300 companies. 1 trade.</text>
+  </svg>`,
+
+  returns: `<svg viewBox="0 0 300 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="16" y="30" width="122" height="90" rx="10" fill="rgba(0,255,135,0.07)" stroke="#00ff87" stroke-width="1.5"/>
+    <text x="77" y="66" fill="#00ff87" font-size="12" font-family="Syne,sans-serif" font-weight="800" text-anchor="middle">CAPITAL</text>
+    <text x="77" y="82" fill="#00ff87" font-size="12" font-family="Syne,sans-serif" font-weight="800" text-anchor="middle">GROWTH</text>
+    <text x="77" y="106" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Price rises above</text>
+    <text x="77" y="118" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">what you paid</text>
+    <rect x="162" y="30" width="122" height="90" rx="10" fill="rgba(255,198,66,0.07)" stroke="#ffc642" stroke-width="1.5"/>
+    <text x="223" y="74" fill="#ffc642" font-size="12" font-family="Syne,sans-serif" font-weight="800" text-anchor="middle">DIVIDENDS</text>
+    <text x="223" y="106" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Company pays you</text>
+    <text x="223" y="118" fill="rgba(255,255,255,0.3)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">a share of profits</text>
+    <text x="150" y="160" fill="rgba(255,255,255,0.15)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Both can happen at the same time</text>
+  </svg>`,
+
+  fees: `<svg viewBox="0 0 300 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <text x="150" y="18" fill="rgba(255,255,255,0.15)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">cost impact (relative)</text>
+    <rect x="20" y="28" width="148" height="26" rx="6" fill="rgba(255,77,106,0.1)" stroke="rgba(255,77,106,0.3)" stroke-width="1"/>
+    <text x="30" y="45" fill="rgba(255,77,106,0.85)" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Brokerage</text>
+    <text x="176" y="45" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="JetBrains Mono,monospace">per trade</text>
+    <rect x="20" y="64" width="114" height="26" rx="6" fill="rgba(255,198,66,0.08)" stroke="rgba(255,198,66,0.25)" stroke-width="1"/>
+    <text x="30" y="81" fill="rgba(255,198,66,0.85)" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">Platform fee</text>
+    <text x="142" y="81" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="JetBrains Mono,monospace">ongoing annual</text>
+    <rect x="20" y="100" width="175" height="26" rx="6" fill="rgba(162,89,255,0.08)" stroke="rgba(162,89,255,0.25)" stroke-width="1"/>
+    <text x="30" y="117" fill="rgba(162,89,255,0.85)" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">FX Spread</text>
+    <text x="203" y="117" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="JetBrains Mono,monospace">overseas trades</text>
+    <rect x="20" y="136" width="90" height="26" rx="6" fill="rgba(77,159,255,0.08)" stroke="rgba(77,159,255,0.22)" stroke-width="1"/>
+    <text x="30" y="153" fill="rgba(77,159,255,0.85)" font-size="9.5" font-family="Syne,sans-serif" font-weight="700">ETF MER</text>
+    <text x="118" y="153" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="JetBrains Mono,monospace">fund manager annual</text>
+  </svg>`,
+
+  chess: `<svg viewBox="0 0 300 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="10" y="22" width="130" height="124" rx="10" fill="rgba(0,255,135,0.06)" stroke="#00ff87" stroke-width="1.5"/>
+    <text x="75" y="50" fill="#00ff87" font-size="11" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">CHESS</text>
+    <text x="75" y="66" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Registered in YOUR name</text>
+    <rect x="24" y="76" width="102" height="22" rx="5" fill="rgba(0,255,135,0.1)" stroke="rgba(0,255,135,0.3)" stroke-width="1"/>
+    <text x="75" y="91" fill="#00ff87" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">HIN: X000123456</text>
+    <text x="75" y="116" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">You own outright</text>
+    <text x="75" y="132" fill="rgba(0,255,135,0.6)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Safer structure</text>
+    <rect x="160" y="22" width="130" height="124" rx="10" fill="rgba(255,77,106,0.04)" stroke="rgba(255,77,106,0.28)" stroke-width="1.5"/>
+    <text x="225" y="50" fill="rgba(255,77,106,0.75)" font-size="11" font-family="Syne,sans-serif" font-weight="700" text-anchor="middle">CUSTODIAL</text>
+    <text x="225" y="66" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Broker holds shares</text>
+    <rect x="174" y="76" width="102" height="22" rx="5" fill="rgba(255,77,106,0.07)" stroke="rgba(255,77,106,0.2)" stroke-width="1"/>
+    <text x="225" y="91" fill="rgba(255,77,106,0.65)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">On your behalf</text>
+    <text x="225" y="116" fill="rgba(255,255,255,0.28)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Platform risk applies</text>
+    <text x="225" y="132" fill="rgba(255,77,106,0.5)" font-size="8.5" font-family="JetBrains Mono,monospace" text-anchor="middle">Consider carefully</text>
+  </svg>`,
+
+  done: `<svg viewBox="0 0 300 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="150" cy="88" r="56" fill="rgba(0,255,135,0.07)" stroke="#00ff87" stroke-width="1.5"/>
+    <circle cx="150" cy="88" r="44" fill="rgba(0,255,135,0.04)" stroke="#00ff87" stroke-width="0.5" opacity="0.4"/>
+    <circle cx="150" cy="88" r="64" fill="none" stroke="#00ff87" stroke-width="0.5" opacity="0.12" stroke-dasharray="5,7"/>
+    <path d="M126,88 L143,105 L176,71" stroke="#00ff87" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="150" y="165" fill="rgba(255,255,255,0.22)" font-size="9" font-family="JetBrains Mono,monospace" text-anchor="middle">Tutorial complete</text>
+  </svg>`,
+};
+
+// ═══════════════════════════════════════════════
+//  RENDER ENGINE
+// ═══════════════════════════════════════════════
+
+let cur = 0;
+let canProceed = true;
+const TOTAL = CHAPTERS.length;
+
+function pt(text) {
+  return `<div class="pt">
+    <div class="pt-icon">
+      <svg viewBox="0 0 10 10" fill="none">
+        <path d="M2,5 L4.5,7.5 L8,3" stroke="#4d9fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span>${text}</span>
+  </div>`;
+}
+
+function buildSlide(ch, i) {
+  const div = document.createElement('div');
+  div.className = 'slide';
+  div.id = 'slide' + i;
+
+  const isQuiz = ch.type === 'quiz';
+  const isComplete = ch.type === 'complete';
+
+  const opts = isQuiz ? ch.options.map((o, j) =>
+    `<button class="answer" id="ans${i}_${j}" onclick="answer(${i},${j})">
+      <span class="answer-key">${['A','B','C','D'][j]}</span>
+      <span>${o}</span>
+    </button>`
+  ).join('') : '';
+
+  const defHtml = ch.def
+    ? `<div class="def-box"><div class="def-label">Definition: ${ch.def.k}</div><div class="def-text">${ch.def.v}</div></div>`
+    : '';
+
+  const ptsHtml = ch.pts
+    ? `<div class="pts">${ch.pts.map(pt).join('')}</div>`
+    : '';
+
+  const dots = CHAPTERS.map((_,x) =>
+    `<div class="dot${x<i?' done':x===i?' active':''}" onclick="goTo(${x})"></div>`
+  ).join('');
+
+  const isFinal = i === TOTAL - 1;
+  const nextLabel = isQuiz ? 'Answer to continue' : isFinal ? 'Find my platform' : 'Continue';
+  const nextClass = isFinal ? 'btn btn-green' : 'btn btn-blue';
+
+  if (isQuiz) {
+    div.innerHTML = `
+      <div class="card">
+        <div class="card-body single">
+          <div class="card-left">
+            <div class="card-chapter"><div class="chapter-dot"></div>${ch.chapter}</div>
+            <div class="card-title">${ch.title}</div>
+            <div class="card-body-text" style="margin-bottom:20px;">${ch.question}</div>
+            <div class="answers">${opts}</div>
+            <div class="feedback" id="fb${i}"></div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="dots">${dots}</div>
+          <div class="nav-btns">
+            ${i > 0 ? `<button class="btn btn-ghost" onclick="go(${i-1})">Back</button>` : ''}
+            <button class="btn btn-blue" id="next${i}" disabled style="opacity:0.4;cursor:not-allowed;">${nextLabel}</button>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    div.innerHTML = `
+      <div class="card">
+        <div class="card-body">
+          <div class="card-left">
+            <div class="card-chapter"><div class="chapter-dot"></div>${ch.chapter}</div>
+            <div class="card-title">${ch.title}</div>
+            <div class="card-body-text">${ch.body}</div>
+            ${defHtml}
+            ${ptsHtml}
+          </div>
+          <div class="card-right">
+            <div class="vis">${VISUALS[ch.vis] || ''}</div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <div class="dots">${dots}</div>
+          <div class="nav-btns">
+            ${i > 0 ? `<button class="btn btn-ghost" onclick="go(${i-1})">Back</button>` : ''}
+            <button class="${nextClass}" onclick="go(${isFinal ? -1 : i+1})">${nextLabel}</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  return div;
+}
+
+function go(i) {
+  if (i === -1) { window.location.href = 'app.html#quiz'; return; }
+  const prev = document.getElementById('slide' + cur);
+  if (prev) prev.classList.remove('active');
+  cur = i;
+  const next = document.getElementById('slide' + cur);
+  if (next) next.classList.add('active');
+  document.getElementById('progFill').style.width = ((cur + 1) / TOTAL * 100) + '%';
+  window.scrollTo(0, 0);
+}
+
+window.goTo = function(i) {
+  // only allow going back or to already-seen slides
+  if (i <= cur) go(i);
+};
+
+window.answer = function(slideIdx, ansIdx) {
+  const ch = CHAPTERS[slideIdx];
+  if (!ch.q) return;
+
+  // Disable all options
+  for (let j = 0; j < ch.options.length; j++) {
+    const el = document.getElementById('ans' + slideIdx + '_' + j);
+    if (el) {
+      el.setAttribute('disabled', '');
+      if (j === ch.correct) el.classList.add('correct');
+      else if (j === ansIdx) el.classList.add('wrong');
+    }
+  }
+
+  const isOk = ansIdx === ch.correct;
+  const fb = document.getElementById('fb' + slideIdx);
+  if (fb) {
+    fb.textContent = isOk ? ch.feedbackOk : ch.feedbackNo;
+    fb.className = 'feedback show ' + (isOk ? 'ok' : 'no');
+  }
+
+  // Enable next button
+  const nb = document.getElementById('next' + slideIdx);
+  if (nb) {
+    nb.removeAttribute('disabled');
+    nb.style.opacity = '1';
+    nb.style.cursor = 'pointer';
+    nb.onclick = () => go(slideIdx + 1);
+  }
+};
+
+// Patch quiz chapters to have .q property (legacy compat)
+CHAPTERS.forEach(ch => {
+  if (ch.type === 'quiz') ch.q = true;
+});
+
+// Build all slides
+const container = document.getElementById('slides');
+CHAPTERS.forEach((ch, i) => {
+  container.appendChild(buildSlide(ch, i));
+});
+
+// Activate first
+go(0);
+
+// Stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 60; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const d = 3 + Math.random() * 7, dl = Math.random() * -10;
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${d}s;--dl:${dl}s;--mn:${0.05+Math.random()*0.1};--mx:${0.3+Math.random()*0.5}`;
+  starsEl.appendChild(s);
+}
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') {
+    const ch = CHAPTERS[cur];
+    if (ch.type !== 'quiz') {
+      const isFinal = cur === TOTAL - 1;
+      go(isFinal ? -1 : cur + 1);
+    }
+  }
+  if (e.key === 'ArrowLeft' && cur > 0) go(cur - 1);
+});
+</script>
+</body>
+</html>
