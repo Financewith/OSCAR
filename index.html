@@ -1428,6 +1428,89 @@
 
 
 <script>
+(function () {
+  var week = (function(){
+    var n=new Date(),s=new Date(n.getFullYear(),0,1);
+    return Math.ceil(((n-s)/86400000+s.getDay()+1)/7);
+  })();
+  var year = new Date().getFullYear();
+  var label = 'W'+week+' · '+year;
+
+  document.getElementById('sotwWeek').textContent = label;
+
+  var FALLBACK = [
+    {p:'Pearler',t:'<strong>Free brokerage for 90 days</strong> on new accounts opened this month. Full CHESS sponsorship and autoinvest included.',chips:['Free trades','90-day window','CHESS sponsored','New accounts only']},
+    {p:'CMC Markets Invest',t:'<strong>Permanently zero brokerage</strong> on ASX and international trades. No minimums, no monthly fee, full CHESS sponsorship.',chips:['Zero brokerage','No minimum','CHESS sponsored','ASX + Global']},
+    {p:'Stake',t:'<strong>Zero brokerage on ASX and US trades</strong> with CHESS sponsorship on Australian holdings.',chips:['Zero brokerage','CHESS sponsored','ASX + US','No minimum']},
+    {p:'Interactive Brokers Australia',t:'<strong>0.03% FX conversion</strong> on international trades — around 20x cheaper than most Australian retail brokers.',chips:['0.03% FX','Global markets','CHESS sponsored','Cost leader']},
+    {p:'Betashares Direct',t:'<strong>Zero brokerage and zero platform fee</strong> when buying Betashares ETFs directly.',chips:['Zero brokerage','Zero platform fee','ETF focused','Direct access']},
+    {p:'Superhero',t:'<strong>$0 brokerage on all ASX ETF trades</strong>, flat $5 on stocks. No ongoing platform fee. CHESS sponsored.',chips:['Free ETF trades','$5 stocks','CHESS sponsored','No platform fee']},
+    {p:'SelfWealth',t:'<strong>Flat $9.50 per trade</strong> regardless of order size. CHESS sponsored with a premium tier available.',chips:['Flat $9.50','CHESS sponsored','No percentage fee','Premium tier']},
+    {p:'Moomoo',t:'<strong>Extended zero brokerage promo</strong> for new account holders. Periodically extends introductory fee waivers.',chips:['Zero brokerage promo','New accounts','ASX + US','Data-rich']},
+    {p:'Webull',t:'<strong>No brokerage on ASX trades</strong> during current promotional window.',chips:['Zero brokerage','Promo window','ASX + Global','Mobile-first']},
+    {p:'Stockspot',t:'<strong>First 6 months at reduced management fee</strong> for new accounts.',chips:['Reduced fee','6-month offer','Robo-advisor','Automated']},
+    {p:'CommSec Pocket',t:'<strong>Flat $2 trades under $1,000</strong> with no account minimum.',chips:['$2 under $1k','Bank-backed','ETF bundles','No minimum']},
+    {p:'Raiz',t:'<strong>First 6 months fee-free</strong> for new accounts during current signup window.',chips:['6 months free','Micro-investing','Round-ups','New accounts only']},
+  ];
+
+  function render(deal) {
+    var mid = document.getElementById('sotwMid');
+    if (!mid) return;
+    mid.innerHTML =
+      '<div class="sotw-name">'+deal.p+'</div>'+
+      '<div class="sotw-copy">'+deal.t+'</div>'+
+      '<div class="sotw-chips">'+
+        deal.chips.map(function(c,i){ return '<span class="sotw-chip'+(i===0?' live':'')+'">'+ c +'</span>'; }).join('')+
+      '</div>';
+  }
+
+  function fallback() {
+    render(FALLBACK[week % FALLBACK.length]);
+  }
+
+  async function load() {
+    var key = 'sotw_'+week+'_'+year;
+    try {
+      var cached = sessionStorage.getItem(key);
+      if (cached) { render(JSON.parse(cached)); return; }
+    } catch(e) {}
+
+    // Show fallback immediately while fetching
+    fallback();
+
+    var prompt =
+      'You are OSCAR, an Australian investing education assistant. It is week '+week+' of '+year+'.'+
+      ' Pick ONE Australian platform with a genuinely good current deal for new investors.'+
+      ' Be specific and contemporary.'+
+      ' Respond ONLY with valid JSON, no other text:'+
+      ' {"p":"exact name from: CMC Markets Invest, Stake, Interactive Brokers Australia, Pearler, Superhero, Betashares Direct, SelfWealth, Raiz, Stockspot, CommSec Pocket, Webull, Moomoo","t":"1-2 sentences. Use <strong> on the key deal detail. General info only.","chips":["chip1","chip2","chip3","chip4"]}'+
+      ' Rotate platform week by week. Week '+week+' pick.';
+
+    try {
+      var res = await fetch('/api/oscar-explains', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({prompt:prompt, style:'short', context:'Respond only with a JSON object. No preamble.'})
+      });
+      if (!res.ok) throw new Error('api');
+      var data = await res.json();
+      var raw = (data.answer||'').trim();
+      var match = raw.match(/\{[\s\S]*?\}/);
+      if (!match) throw new Error('no json');
+      var deal = JSON.parse(match[0]);
+      if (!deal.p || !deal.t || !Array.isArray(deal.chips)) throw new Error('bad shape');
+      try { sessionStorage.setItem(key, JSON.stringify(deal)); } catch(e) {}
+      render(deal);
+    } catch(e) {
+      // already showing fallback, nothing more to do
+    }
+  }
+
+  load();
+})();
+</script>
+
+<script>
 // Scroll reveal - only animate if JS is running
 (function(){
   document.body.classList.add('js-reveal');
