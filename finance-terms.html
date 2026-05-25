@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>OSCAR: Finance Bro Terms</title>
+<meta name="description" content="Finance jargon decoded: WACC, EBITDA, P/E, ROE and more, explained simply with formulas for beginners."/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  --bg:#08090d; --bg2:#0d0f17; --bg3:#111420;
+  --text:#f0f2f8; --muted:rgba(240,242,248,0.56); --dim:rgba(240,242,248,0.3);
+  --violet:#a259ff; --violet-mid:#7c2fff; --green:#00ff87; --blue:#4d9fff; --amber:#ffc642;
+  --line:rgba(255,255,255,0.07); --line2:rgba(255,255,255,0.12);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--text); font-family:'DM Sans',system-ui,sans-serif; font-size:16px; line-height:1.65; overflow-x:hidden; }
+
+.bg-base { position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:
+    radial-gradient(ellipse 900px 500px at 15% 8%, rgba(162,89,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 800px 600px at 85% 92%, rgba(162,89,255,0.05) 0%, transparent 60%); }
+.scanlines { position:fixed; inset:0; pointer-events:none; z-index:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,0.008) 2px,rgba(255,255,255,0.008) 4px); }
+
+nav { position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between;
+  padding:14px 40px 14px 72px; background:rgba(8,9,13,0.85); backdrop-filter:blur(24px); border-bottom:1px solid var(--line); }
+.nav-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; letter-spacing:0.1em; color:var(--text); text-decoration:none; display:flex; align-items:center; gap:8px; }
+.nav-brand svg { width:20px; height:20px; }
+.nav-back { font-size:0.82rem; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+.nav-back:hover { color:var(--text); }
+
+.page { position:relative; z-index:1; }
+.container { width:min(960px, calc(100vw - 48px)); margin:0 auto; }
+
+.hero { padding:70px 0 40px; text-align:center; }
+.hero-label { font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--violet); letter-spacing:0.12em; text-transform:uppercase; margin-bottom:14px; }
+.hero h1 { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(2.2rem,5vw,3.4rem); letter-spacing:-0.03em; line-height:1.05; margin-bottom:16px; }
+.hero h1 .v { color:var(--violet); }
+.hero p { color:var(--muted); font-size:1.05rem; max-width:580px; margin:0 auto; }
+
+/* quick jump */
+.jump { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:26px; }
+.jump a { padding:6px 13px; border-radius:100px; background:rgba(162,89,255,0.07); border:1px solid rgba(162,89,255,0.22);
+  font-family:'JetBrains Mono',monospace; font-size:0.68rem; color:var(--violet); text-decoration:none; transition:background 0.2s; }
+.jump a:hover { background:rgba(162,89,255,0.16); }
+
+.terms { padding:30px 0 10px; display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+@media(max-width:720px){ .terms { grid-template-columns:1fr; } }
+
+.term { background:var(--bg2); border:1px solid var(--line); border-radius:18px; padding:24px; position:relative; overflow:hidden; transition:border-color 0.2s, transform 0.2s; scroll-margin-top:80px; }
+.term:hover { border-color:rgba(162,89,255,0.3); transform:translateY(-2px); }
+.term::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background:linear-gradient(90deg,var(--violet),transparent); }
+.term-head { display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+.term-abbr { font-family:'Syne',sans-serif; font-weight:800; font-size:1.4rem; color:var(--violet); letter-spacing:-0.01em; }
+.term-full { font-size:0.82rem; color:var(--dim); font-family:'JetBrains Mono',monospace; }
+.term-def { font-size:0.92rem; color:var(--muted); line-height:1.6; margin-bottom:14px; }
+.term-def strong { color:var(--text); }
+.term-formula { background:rgba(0,0,0,0.3); border:1px solid var(--line2); border-radius:10px; padding:12px 14px; margin-bottom:12px; }
+.formula-label { font-family:'JetBrains Mono',monospace; font-size:0.58rem; color:var(--dim); letter-spacing:0.1em; text-transform:uppercase; margin-bottom:6px; }
+.formula-text { font-family:'JetBrains Mono',monospace; font-size:0.85rem; color:var(--violet); line-height:1.5; }
+.term-why { font-size:0.82rem; color:var(--dim); line-height:1.55; border-top:1px solid var(--line); padding-top:11px; }
+.term-why strong { color:var(--muted); }
+
+.disclaimer { padding:18px 22px; background:rgba(255,255,255,0.02); border:1px solid var(--line); border-radius:14px; font-size:0.8rem; color:var(--dim); line-height:1.6; margin:30px 0; }
+.disclaimer strong { color:var(--muted); }
+
+.cta-bar { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:24px 28px; border-radius:18px;
+  background:linear-gradient(135deg,rgba(162,89,255,0.08),rgba(8,9,13,0)); border:1px solid var(--line2); margin:10px 0 30px; flex-wrap:wrap; }
+.cta-text { font-family:'Syne',sans-serif; font-weight:700; font-size:1.1rem; }
+.btn { display:inline-flex; align-items:center; gap:8px; padding:11px 22px; border-radius:12px; font-weight:600; font-size:0.9rem; text-decoration:none; border:1px solid; transition:all 0.2s; cursor:pointer; }
+.btn-violet { background:rgba(162,89,255,0.15); color:var(--violet); border-color:rgba(162,89,255,0.35); }
+.btn-violet:hover { background:rgba(162,89,255,0.25); box-shadow:0 8px 24px rgba(162,89,255,0.2); }
+
+footer { border-top:1px solid var(--line); padding:30px 0; margin-top:20px; }
+.footer-inner { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.footer-brand { font-family:'Syne',sans-serif; font-weight:800; font-size:0.95rem; letter-spacing:0.1em; }
+.footer-copy { font-size:0.78rem; color:var(--dim); }
+
+@media(max-width:640px){ nav { padding:14px 20px; } }
+
+    /* hamburger menu */
+    .hamburger {
+      position: fixed; top: 14px; left: 16px; z-index: 200;
+      width: 42px; height: 42px; border-radius: 10px;
+      background: rgba(13,15,23,0.85); backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.12);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+    }
+    .hamburger:hover { border-color: rgba(0,255,135,0.4); background: rgba(13,15,23,0.95); }
+    .hamburger span { display: block; width: 18px; height: 2px; border-radius: 2px; background: #f0f2f8; transition: transform 0.3s, opacity 0.3s; }
+    .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .ham-overlay { position: fixed; inset: 0; background: rgba(8,9,13,0.6); backdrop-filter: blur(4px); z-index: 150; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+    .ham-overlay.open { opacity: 1; pointer-events: auto; }
+    .ham-menu {
+      position: fixed; top: 0; left: 0; bottom: 0; z-index: 199; width: 320px; max-width: 85vw;
+      background: #0d0f17; border-right: 1px solid rgba(255,255,255,0.12);
+      overflow-y: auto; box-shadow: 24px 0 64px rgba(0,0,0,0.5);
+      transform: translateX(-100%); pointer-events: none;
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column; padding-top: 72px;
+    }
+    .ham-menu.open { transform: translateX(0); pointer-events: auto; }
+    .ham-menu::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #00ff87, #4d9fff, #a259ff); }
+    .ham-menu-header { padding: 0 24px 20px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 8px; }
+    .ham-menu-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; letter-spacing: 0.05em; color: #f0f2f8; }
+    .ham-menu-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: #00ff87; letter-spacing: 0.08em; margin-top: 4px; }
+    .ham-item { display: flex; align-items: center; gap: 14px; padding: 18px 24px; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.07); transition: background 0.18s; cursor: pointer; }
+    .ham-item:hover { background: rgba(255,255,255,0.03); }
+    .ham-item.current { cursor: default; }
+    .ham-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .ham-icon.green { background: rgba(0,255,135,0.1); border: 1px solid rgba(0,255,135,0.25); }
+    .ham-icon.rg { background: rgba(255,77,106,0.08); border: 1px solid rgba(255,198,66,0.25); }
+    .ham-icon.purple { background: rgba(162,89,255,0.1); border: 1px solid rgba(162,89,255,0.28); }
+    .ham-icon svg { width: 17px; height: 17px; }
+    .ham-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem; color: #f0f2f8; line-height: 1.2; }
+    .ham-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; color: rgba(240,242,248,0.3); letter-spacing: 0.04em; margin-top: 2px; }
+</style>
+</head>
+<body>
+<!-- Hamburger menu -->
+<div class="hamburger" id="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
+<div class="ham-overlay" id="hamOverlay" onclick="toggleMenu()"></div>
+<div class="ham-menu" id="hamMenu">
+  <div class="ham-menu-header"><div class="ham-menu-title">OSCAR</div><div class="ham-menu-sub">AU INVESTING GUIDE</div></div>
+  <a class="ham-item" href="/">
+    <div class="ham-icon green"><svg viewBox="0 0 17 17" fill="none"><polygon points="8.5,2 14,6.5 12,15 5,15 3,6.5" fill="rgba(0,255,135,0.2)" stroke="#00ff87" stroke-width="1" stroke-linejoin="round"/></svg></div>
+    <div class="ham-text"><div class="ham-title">Finance with OSCAR</div><div class="ham-sub">Home</div></div>
+  </a>
+  <a class="ham-item" href="chart-guide.html">
+    <div class="ham-icon rg"><svg viewBox="0 0 17 17" fill="none"><rect x="3" y="6" width="2.5" height="6" fill="#00ff87"/><line x1="4.25" y1="3" x2="4.25" y2="14" stroke="#00ff87" stroke-width="1"/><rect x="8" y="4" width="2.5" height="7" fill="#ff4d6a"/><line x1="9.25" y1="2" x2="9.25" y2="13" stroke="#ff4d6a" stroke-width="1"/><rect x="12.5" y="7" width="2.5" height="5" fill="#00ff87"/><line x1="13.75" y1="4" x2="13.75" y2="14" stroke="#00ff87" stroke-width="1"/></svg></div>
+    <div class="ham-text"><div class="ham-title">How to Read a Chart</div><div class="ham-sub">Candles, wicks, trends</div></div>
+  </a>
+  <a class="ham-item current">
+    <div class="ham-icon purple"><svg viewBox="0 0 17 17" fill="none"><path d="M4 13V5M4 5l4 4 5-6" stroke="#a259ff" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="13" cy="3" r="1.3" fill="#a259ff"/></svg></div>
+    <div class="ham-text"><div class="ham-title">Finance Bro Terms</div><div class="ham-sub">You're here</div></div>
+  </a>
+</div>
+
+<div class="bg-base"></div>
+<div class="scanlines"></div>
+
+<div class="page">
+<nav>
+  <a class="nav-brand" href="/">
+    <svg viewBox="0 0 32 32" fill="none"><polygon points="16,6 26,13 22,26 10,26 6,13" fill="rgba(0,255,135,0.15)" stroke="#00ff87" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    OSCAR
+  </a>
+  <a class="nav-back" href="/">← Back to home</a>
+</nav>
+
+<main>
+<section class="hero">
+  <div class="container">
+    <div class="hero-label">The Investor's Glossary</div>
+    <h1>Finance bro terms<span class="v">,</span> decoded<span class="v">.</span></h1>
+    <p>The acronyms get thrown around like everyone's supposed to already know them. Here's what they actually mean, with the formulas and why they matter, in plain English.</p>
+    <div class="jump">
+      <a href="#pe">P/E</a><a href="#eps">EPS</a><a href="#ebitda">EBITDA</a><a href="#wacc">WACC</a>
+      <a href="#roe">ROE</a><a href="#roic">ROIC</a><a href="#mktcap">Market Cap</a><a href="#divyield">Div Yield</a>
+      <a href="#fcf">FCF</a><a href="#de">D/E</a><a href="#margin">Margins</a><a href="#beta">Beta</a>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <div class="terms">
+
+    <div class="term" id="pe">
+      <div class="term-head"><span class="term-abbr">P/E</span><span class="term-full">Price to Earnings</span></div>
+      <div class="term-def">How much you pay for each dollar of a company's profit. A <strong>P/E of 20</strong> means you're paying $20 for every $1 the company earns per year.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">P/E = Share Price ÷ Earnings Per Share</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> a high P/E can mean a stock is expensive, or that investors expect strong growth. A low P/E can mean it's cheap, or that growth is expected to slow.</div>
+    </div>
+
+    <div class="term" id="eps">
+      <div class="term-head"><span class="term-abbr">EPS</span><span class="term-full">Earnings Per Share</span></div>
+      <div class="term-def">The company's total profit divided across every share. It tells you <strong>how much profit each single share earned</strong>.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">EPS = Net Profit ÷ Shares Outstanding</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> EPS growth over time is a sign a company is becoming more profitable. It feeds directly into the P/E ratio.</div>
+    </div>
+
+    <div class="term" id="ebitda">
+      <div class="term-head"><span class="term-abbr">EBITDA</span></div>
+      <div class="term-full" style="margin-bottom:8px;">Earnings Before Interest, Tax, Depreciation &amp; Amortisation</div>
+      <div class="term-def">A measure of a company's <strong>core operating profit</strong>, stripping out financing and accounting effects. It shows how much the actual business makes before the extras.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">EBITDA = Net Profit + Interest + Tax + Depreciation + Amortisation</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> it lets you compare the operating performance of companies regardless of debt levels or tax situations. Critics say it can hide real costs.</div>
+    </div>
+
+    <div class="term" id="wacc">
+      <div class="term-head"><span class="term-abbr">WACC</span></div>
+      <div class="term-full" style="margin-bottom:8px;">Weighted Average Cost of Capital</div>
+      <div class="term-def">The average rate a company pays to finance itself, blending the cost of its <strong>debt and equity</strong>. Essentially the minimum return a company needs to be worth investing in.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">WACC = (E/V × Re) + (D/V × Rd × (1−Tax))</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> if a company can't earn more than its WACC, it's destroying value. Analysts use it as the "discount rate" when valuing companies.</div>
+    </div>
+
+    <div class="term" id="roe">
+      <div class="term-head"><span class="term-abbr">ROE</span><span class="term-full">Return on Equity</span></div>
+      <div class="term-def">How efficiently a company turns shareholder money into profit. An <strong>ROE of 15%</strong> means it generates $0.15 of profit for every $1 of equity.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">ROE = Net Profit ÷ Shareholder Equity</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> consistently high ROE often signals a quality business. But high debt can inflate it artificially, so check alongside debt levels.</div>
+    </div>
+
+    <div class="term" id="roic">
+      <div class="term-head"><span class="term-abbr">ROIC</span><span class="term-full">Return on Invested Capital</span></div>
+      <div class="term-def">How well a company uses <strong>all</strong> its capital (debt and equity) to generate returns. A stricter cousin of ROE.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">ROIC = Net Operating Profit After Tax ÷ Invested Capital</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> when ROIC is higher than WACC, the company is creating value. It's one of the cleanest measures of business quality.</div>
+    </div>
+
+    <div class="term" id="mktcap">
+      <div class="term-head"><span class="term-abbr">Market Cap</span></div>
+      <div class="term-full" style="margin-bottom:8px;">Market Capitalisation</div>
+      <div class="term-def">The total value of all a company's shares. It's <strong>what the market thinks the whole company is worth</strong> right now.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">Market Cap = Share Price × Shares Outstanding</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> it defines company size. Large-cap (over $10B) tends to be more stable; small-cap can be more volatile but higher growth.</div>
+    </div>
+
+    <div class="term" id="divyield">
+      <div class="term-head"><span class="term-abbr">Div Yield</span></div>
+      <div class="term-full" style="margin-bottom:8px;">Dividend Yield</div>
+      <div class="term-def">The annual dividend as a percentage of the share price. A <strong>4% yield</strong> means you get $4 a year in dividends for every $100 invested.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">Dividend Yield = Annual Dividend ÷ Share Price × 100</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> it shows income return separate from price growth. A very high yield can sometimes be a warning sign of a falling price.</div>
+    </div>
+
+    <div class="term" id="fcf">
+      <div class="term-head"><span class="term-abbr">FCF</span><span class="term-full">Free Cash Flow</span></div>
+      <div class="term-def">The cash left over after a company pays its running costs and reinvests in itself. <strong>Real, spendable cash</strong>, not accounting profit.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">FCF = Operating Cash Flow − Capital Expenditure</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> cash is harder to fake than profit. Strong FCF means a company can pay dividends, reduce debt, or reinvest without borrowing.</div>
+    </div>
+
+    <div class="term" id="de">
+      <div class="term-head"><span class="term-abbr">D/E</span><span class="term-full">Debt to Equity</span></div>
+      <div class="term-def">How much debt a company uses compared to shareholder money. A <strong>D/E of 1.0</strong> means equal debt and equity.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">D/E = Total Debt ÷ Shareholder Equity</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> high debt amplifies both gains and risk. What counts as "high" varies hugely by industry, so compare within a sector.</div>
+    </div>
+
+    <div class="term" id="margin">
+      <div class="term-head"><span class="term-abbr">Margins</span></div>
+      <div class="term-full" style="margin-bottom:8px;">Gross / Net Profit Margin</div>
+      <div class="term-def">The percentage of revenue a company keeps as profit. <strong>Gross margin</strong> is after direct costs; <strong>net margin</strong> is after everything.</div>
+      <div class="term-formula"><div class="formula-label">Formula</div><div class="formula-text">Net Margin = Net Profit ÷ Revenue × 100</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> higher margins mean more profit kept from each sale, often a sign of pricing power or efficiency. Compare within the same industry.</div>
+    </div>
+
+    <div class="term" id="beta">
+      <div class="term-head"><span class="term-abbr">Beta</span><span class="term-full">Volatility vs Market</span></div>
+      <div class="term-def">How much a stock moves relative to the overall market. <strong>Beta of 1</strong> moves with the market; <strong>above 1</strong> is more volatile, below 1 is calmer.</div>
+      <div class="term-formula"><div class="formula-label">Reading it</div><div class="formula-text">Beta = 1.5 → 50% more volatile than market<br>Beta = 0.5 → half as volatile</div></div>
+      <div class="term-why"><strong>Why it matters:</strong> it's a quick gauge of risk. High-beta stocks swing harder in both directions; low-beta stocks are steadier.</div>
+    </div>
+
+  </div>
+
+  <div class="disclaimer">
+    <strong>General information only.</strong> These definitions are educational and simplified. They are not financial product advice and do not consider your personal circumstances. Financial metrics should never be used in isolation. Always do your own research and consider professional advice before making investment decisions.
+  </div>
+
+  <div class="cta-bar">
+    <div class="cta-text">Now put it to use.</div>
+    <a class="btn btn-violet" href="app.html#explains">Ask OSCAR a question ✦</a>
+  </div>
+
+</div>
+</main>
+
+<footer><div class="container"><div class="footer-inner">
+  <div class="footer-brand">OSCAR</div>
+  <div class="footer-copy">Independent educational tool. General information only. Not financial advice.</div>
+</div></div></footer>
+</div>
+
+<script>
+function toggleMenu() {
+  var h = document.getElementById('hamburger');
+  var m = document.getElementById('hamMenu');
+  var o = document.getElementById('hamOverlay');
+  var isOpen = m.classList.contains('open');
+  if (isOpen) { h.classList.remove('open'); m.classList.remove('open'); o.classList.remove('open'); }
+  else { h.classList.add('open'); m.classList.add('open'); o.classList.add('open'); }
+}
+</script>
+</body>
+</html>
